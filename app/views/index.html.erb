@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hello world</title>
+  </head>
+  <body>
+    <h1>Book Beep</h1>
+    <h2>Search the royal database</h2>
+    <!-- BEGIN LIBRIS search box -->
+      <div style="background: #191919 url(http://libris.kb.se/images/bg2_2.gif) bottom repeat-x; width: 300px;">
+      <div style="background: url(http://libris.kb.se/images/main2_2.gif) no-repeat; width: 300px;">
+        <form style="margin: 0; padding: 7px 0 11px 100px;" method="get" target="_blank" action="http://libris.kb.se/formatQuery.jsp?" accept-charset="UTF-8" onsubmit="window.open('http://libris.kb.se/formatQuery.jsp?SEARCH_ALL='+ encodeURIComponent(document.getElementById('LIBRIS_SEARCH2').value),'LIBRIS'); return false;">
+          <fieldset style="margin: 0; padding: 0; border: none;">
+            <legend style="margin: 0; padding: 0; display: none;">Sök i LIBRIS</legend>
+            <div><input name="SEARCH_ALL" id="LIBRIS_SEARCH2" type="text" style="vertical-align: bottom; font-size: 11px; width: 70%;"/> <input type="submit" value="sök" style="vertical-align: bottom; cursor: pointer; font-size: 11px;"/></div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+    <!-- END LIBRIS search box -->
+
+    <!-- Button to add new items -->
+    <div>
+      <%= link_to "Add more items", root_path %>
+    </div>
+    <!-- Button to list all items -->
+      <%= link_to "List catalogue", root_path %>
+    <!-- List ten most popular items -->
+<h2>- där ditt bibliotek sparas på molnet</h2>
+
+
+  </body>
+</html>
