@@ -5,15 +5,19 @@ source 'https://rubygems.org'
 gem 'rails', '4.2.7'
 
 # Includes core and resources, v3 is 'out there'
-# Have not included the 'other' two aws sdks available
 gem 'aws-sdk', '~> 2'
 
+# For using AWS with rails
+gem 'aws-sdk-rails'
+# For using AWS with DynamoDB
+gem 'aws-record', '~> 1.0'
+
+# Might be replaced by aws-record?
 gem 'dynamoid', '~> 1'
 
 # # Elastic Beanstalk wants this too
 # # Use Puma as the app server
 # gem 'puma', '~> 3.0'
-
 
 
 
@@ -79,6 +83,9 @@ group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
 end
+
+# StackOverflow says to downgrade 'thor', which is part of jquery-rails
+gem 'thor', '0.19.1'
 
 # # Elastic Beanstalk might want it
 # gem 'listen', '~> 3.0.5'
