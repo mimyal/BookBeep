@@ -12,6 +12,8 @@
 !/log/.keep
 /tmp
 
+/test/cassettes/
+
 /.DS_Store
 
 # Ignore Byebug command history file.

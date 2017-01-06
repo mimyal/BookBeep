@@ -10,6 +10,7 @@ gem 'aws-sdk', '~> 2'
 # For using AWS with rails
 gem 'aws-sdk-rails'
 # For using AWS with DynamoDB
+gem 'aws-sdk-resources', '~> 2.5'
 gem 'aws-record', '~> 1.0'
 
 # Might be replaced by aws-record?
@@ -65,6 +66,7 @@ group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
 
+  gem 'dotenv-rails'
 
   ## Custom: from earlier projects
   gem "better_errors"
