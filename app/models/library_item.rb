@@ -54,7 +54,7 @@ class LibraryItem
     item = {
       isbn: info[:isbn], # primary Partition key
       title: info[:title],
-      datetime_created: Time.now.strftime("%Q").to_i, # primary Sort key
+      datetime_created: Time.now.to_datetime.strftime('%Q').to_i, # primary Sort key
       # creator_first_name: creator_first_name,
       # creator_last_name: creator_last_name
     }
@@ -65,7 +65,7 @@ class LibraryItem
 
     # Accessing DynamoDB to add the new item
     begin
-      data = client.put_item(params) # add new item into DynamoDB
+      client.put_item(params) # add new item into DynamoDB
       puts "Added item: #{info[:title]}"
 
     rescue  Aws::DynamoDB::Errors::ServiceError => error

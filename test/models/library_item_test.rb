@@ -95,7 +95,7 @@ class LibraryItemTest < ActiveSupport::TestCase
   #       assert(book.title, 'Sent i november')
   #     }
   end
-  test "#add_media should add a new item to DynamoDB" do
+  test "#add_media should add item to DynamoDB" do
     # First the new item info
     item = {
       isbn: 9119275714,
@@ -118,22 +118,18 @@ class LibraryItemTest < ActiveSupport::TestCase
     begin
       results = dynamodb.query(query)
       puts "#add_media test query succeeded."
-      # puts "THERE ARE ITEMS #{results.items.empty?}"
       assert_equal(results.items.empty?, false)
-      # puts results.items
       results.items.each{|listing|
         assert_equal(listing["isbn"], 9119275714)
         assert_equal(listing["title"], 'Sent i november')
       }
-      # puts "Count: #{results.count} Scanned Count: #{results.scanned_count}"
-
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       assert false
       puts "#add_media test: Unable to query table:"
       puts "#{error.message}"
     end
   end #test
-  test "#add_media should add a new item to DynamoDB so table increase by one" do
+  test "#add_media a new item should increase DynamoDB table by one" do
     # First the new item info
     item = {
       isbn: 9119275714,
@@ -157,20 +153,15 @@ class LibraryItemTest < ActiveSupport::TestCase
       results = dynamodb.query(query)
       puts "#add_media test query succeeded."
       puts "THERE ARE NO ITEMS #{results.items.empty?}"
-      # assert_equal(results.items.empty?, false)
-      # puts results.items
       results.items.each{|listing|
-        # assert_equal(listing["isbn"], 9119275714)
-        # assert_equal(listing["title"], 'Sent i november')
       }
-      # puts "Count: #{results.count} Scanned Count: #{results.scanned_count}"
 
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       assert false
       puts "#add_media test: Unable to query table:"
       puts "#{error.message}"
     end
-    puts "#{results.items.count} FIRST"
+
     # Wrap assert around the method to ensure the new item is counted
     assert_difference("results.count", 1) do
     # Then run the creation method a second time (new item, new time)
@@ -180,7 +171,6 @@ class LibraryItemTest < ActiveSupport::TestCase
         assert(listing['isbn'], item[:isbn])
       }
     end
-    puts "#{results.items.count} SECOND"
 
 
   end # test
