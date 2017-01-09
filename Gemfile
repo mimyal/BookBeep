@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 
-
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.7'
 
@@ -73,7 +72,7 @@ group :development, :test do
   gem "binding_of_caller"
   gem 'rails-pry'
 
-  gem 'minitest-vcr'
+  # gem 'minitest-vcr'
   gem 'webmock'
 
 end
