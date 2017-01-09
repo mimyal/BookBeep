@@ -201,5 +201,64 @@ end # test
   test "#add_media should check that a new item of the same isbn as an exsisting item has the same title" do
     skip
   end
+  test "add_media: A new item to the Library Table should be found in the table" do
+    # First the new item info
+    item = {
+      isbn: 9119275714,
+      title: 'Sent i november'
+    }
+    # Then run the creation method
+    book = LibraryItem.add_media(item)
+    assert_instance_of(LibraryItem, book)
+
+    # Then set up a query
+    query = {
+      table_name: "LibraryItems",
+      key_condition_expression: "isbn = :isbn",
+      expression_attribute_values: {
+        ":isbn" => item[:isbn]
+      }
+    }
+    # RUN QUERY
+    dynamodb = Aws::DynamoDB::Client.new
+    begin
+      results = dynamodb.query(query)
+      puts "Query succeeded."
+      # puts "THERE ARE ITEMS #{results.items.empty?}"
+      assert_equal(results.items.empty?, false)
+      puts results
+      puts results.items
+      results.items.each{|book|
+        puts "#{book["isbn"]} #{book["title"]} >>>>>>>>>>>>>>>>>>"
+        assert(book["isbn"], 9119275714000)
+        assert(book["title"], 'Sent i novemberXXX')
+      }
+      # puts "Count: #{results.count} Scanned Count: #{results.scanned_count}"
+
+    rescue  Aws::DynamoDB::Errors::ServiceError => error
+      assert false
+      puts "Unable to query table:"
+      puts "#{error.message}"
+    end
+
+
+  end #test
+  # #INPROGRESS
+  #
+  # Also in create ensure that no item is created with isbn/title different, if isbn exist, make sure the title is as before
+  #
+  #
+  #     #could be more than one item in the real database with this isbn
+  #     assert_difference(result.count, 1) do
+  #       LibraryItem.add_media(isbn, title)
+  #       result = client.query(params)
+  #       result.items.each { |item| # There might be more than one item with this isbn
+  #         assert(item['isbn'], isbn)
+  #       }
+  #     end
+  #
+  #     # test isbn and title on retrieval - chicken and egg
+  #     assert false
+  #   end
 
 end

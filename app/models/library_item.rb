@@ -13,7 +13,6 @@ class LibraryItem
     @isbn = info[isbn]
     @title = info[title] # Title required on creation (add validations)
 
-
     # @client = Aws::DynamoDB::Client.new
 
   end
