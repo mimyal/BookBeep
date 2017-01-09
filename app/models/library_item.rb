@@ -1,13 +1,15 @@
-# Requires here.
+require 'aws-sdk'
+
 class LibraryItem
-  include Aws::Record
-  include Dynamoid::Document
+  # include Aws::Record
+  # include Dynamoid::Document
 
-  attr_reader :isbn
+  attr_reader :isbn, :title
 
-  integer_attr :isbn, hash_key: true
-  string_attr  :datetime_created, range_key: true
-  boolean_attr :active, database_attribute_name: "is_active_flag"
+# Don't remember why these were here
+  # integer_attr :isbn, hash_key: true
+  # string_attr  :datetime_created, range_key: true
+  # boolean_attr :active, database_attribute_name: "is_active_flag"
 
   def initialize(info)
     @isbn = info[isbn]
@@ -44,36 +46,34 @@ class LibraryItem
   end
 
   def self.add_media(info)
-    #Create a new instance of LibraryItem
-    @library_item = LibraryItem.new(info)
-
     #Create a new client to access DynamoDB
     client = Aws::DynamoDB::Client.new
-
+#
     # Prepare params for inserting the instance into db
+    # Gives no flexibility to add other data than these two (and they must be present)
     item = {
-      isbn: isbn, # primary Partition key
+      isbn: info[:isbn], # primary Partition key
+      title: info[:title],
       datetime_created: Time.now.strftime("%Q").to_i, # primary Sort key
-      title: title,
       # creator_first_name: creator_first_name,
       # creator_last_name: creator_last_name
     }
     params = {
-      table_name: "Library",
+      table_name: "LibraryItems",
       item: item
     }
 
     # Accessing DynamoDB to add the new item
-#     begin
-#       data = client.put_item(params) # add new item into DynamoDB
-#       puts "Added item: #{title}"
-#
-#     rescue  Aws::DynamoDB::Errors::ServiceError => error
-#       puts "Unable to add item:"
-#       puts "#{error.message}"
-#     end
-#     return data
-  return @library_item
+    begin
+      data = client.put_item(params) # add new item into DynamoDB
+      puts "Added item: #{info[:title]}"
+
+    rescue  Aws::DynamoDB::Errors::ServiceError => error
+      puts "Unable to add item:"
+      puts "#{error.message}"
+    end
+
+    return LibraryItem.new(item)
   end
 
 end

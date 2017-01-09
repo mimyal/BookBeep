@@ -117,91 +117,23 @@ class LibraryItemTest < ActiveSupport::TestCase
     dynamodb = Aws::DynamoDB::Client.new
     begin
       results = dynamodb.query(query)
-      puts "Query succeeded."
+      puts "#add_media test query succeeded."
       # puts "THERE ARE ITEMS #{results.items.empty?}"
       assert_equal(results.items.empty?, false)
-      puts results
-      puts results.items
+      # puts results.items
       results.items.each{|listing|
-        puts "#{listing["isbn"]} #{listing["title"]} >>>>>>>>>>>>>>>>>>"
-        assert(listing["isbn"], 9119275714000)
-        assert(listing["title"], 'Sent i novemberXXX')
+        assert_equal(listing["isbn"], 9119275714)
+        assert_equal(listing["title"], 'Sent i november')
       }
       # puts "Count: #{results.count} Scanned Count: #{results.scanned_count}"
 
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       assert false
-      puts "Unable to query table:"
+      puts "#add_media test: Unable to query table:"
       puts "#{error.message}"
     end
-
-
   end #test
   test "#add_media should add a new item to DynamoDB so table increase by one" do
-    skip
-  #   # First the new item info
-  #   item = {
-  #     isbn: 9119275714,
-  #     title: 'Sent i november'
-  #   }
-  #   # Then run the creation method, and assert there are items created
-  #   #     assert_difference(result.count, 1) do
-  #   book = LibraryItem.add_media(item)
-  #   assert_instance_of(LibraryItem, book)
-  #   #       result = client.query(params)
-  #   #       result.items.each { |item| # There might be more than one item with this isbn
-  #   #         assert(item['isbn'], isbn)
-  #   #       }
-  #   #     end
-  #
-  #
-  #   # Then set up a query
-  #   query = {
-  #     table_name: "LibraryItems",
-  #     key_condition_expression: "isbn = :isbn",
-  #     expression_attribute_values: {
-  #       ":isbn" => item[:isbn]
-  #     }
-  #   }
-  #   # RUN QUERY
-  #   dynamodb = Aws::DynamoDB::Client.new
-  #   begin
-  #     results = dynamodb.query(query)
-  #     puts "Query succeeded."
-  #     assert_equal(results.items.empty?, false)
-  #     results.items.each{|book|
-        # puts "#{book["isbn"]} #{book["title"]} >>>>>>>>>>>>>>>>>>"
-  #       assert(book["isbn"], 9119275714000)
-  #       assert(book["title"], 'Sent i novemberXXX')
-  #     }
-  #
-  #   rescue  Aws::DynamoDB::Errors::ServiceError => error
-  #     assert false
-  #     puts "Unable to query table:"
-  #     puts "#{error.message}"
-  #   end
-  # end #test
-
-  # Also in create ensure that no item is created with isbn/title different, if isbn exist, make sure the title is as before
-  #
-  #
-  #     #could be more than one item in the real database with this isbn
-  #     assert_difference(result.count, 1) do
-  #       LibraryItem.add_media(isbn, title)
-  #       result = client.query(params)
-  #       result.items.each { |item| # There might be more than one item with this isbn
-  #         assert(item['isbn'], isbn)
-  #       }
-  #     end
-  #
-  #     # test isbn and title on retrieval - chicken and egg
-  #     assert false
-end # test
-
-  test "#add_media should check that a new item of the same isbn as an exsisting item has the same title" do
-    skip
-  end
-  test "add_media: A new item to the Library Table should be found in the table" do
     # First the new item info
     item = {
       isbn: 9119275714,
@@ -223,42 +155,41 @@ end # test
     dynamodb = Aws::DynamoDB::Client.new
     begin
       results = dynamodb.query(query)
-      puts "Query succeeded."
-      # puts "THERE ARE ITEMS #{results.items.empty?}"
-      assert_equal(results.items.empty?, false)
-      puts results
-      puts results.items
-      results.items.each{|book|
-        puts "#{book["isbn"]} #{book["title"]} >>>>>>>>>>>>>>>>>>"
-        assert(book["isbn"], 9119275714000)
-        assert(book["title"], 'Sent i novemberXXX')
+      puts "#add_media test query succeeded."
+      puts "THERE ARE NO ITEMS #{results.items.empty?}"
+      # assert_equal(results.items.empty?, false)
+      # puts results.items
+      results.items.each{|listing|
+        # assert_equal(listing["isbn"], 9119275714)
+        # assert_equal(listing["title"], 'Sent i november')
       }
       # puts "Count: #{results.count} Scanned Count: #{results.scanned_count}"
 
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       assert false
-      puts "Unable to query table:"
+      puts "#add_media test: Unable to query table:"
       puts "#{error.message}"
     end
+    puts "#{results.items.count} FIRST"
+    # Wrap assert around the method to ensure the new item is counted
+    assert_difference("results.count", 1) do
+    # Then run the creation method a second time (new item, new time)
+      book = LibraryItem.add_media(item)
+      results = dynamodb.query(query)
+      results.items.each { |listing| # This isbn is used two times for two items
+        assert(listing['isbn'], item[:isbn])
+      }
+    end
+    puts "#{results.items.count} SECOND"
 
 
-  end #test
-  # #INPROGRESS
-  #
-  # Also in create ensure that no item is created with isbn/title different, if isbn exist, make sure the title is as before
-  #
-  #
-  #     #could be more than one item in the real database with this isbn
-  #     assert_difference(result.count, 1) do
-  #       LibraryItem.add_media(isbn, title)
-  #       result = client.query(params)
-  #       result.items.each { |item| # There might be more than one item with this isbn
-  #         assert(item['isbn'], isbn)
-  #       }
-  #     end
-  #
-  #     # test isbn and title on retrieval - chicken and egg
-  #     assert false
-  #   end
+  end # test
+
+  test "#add_media should not add media that has an isbn of other than 9 or 12 digits" do
+    skip
+  end
+  test "#add_media should check that a new item of the same isbn as an exsisting item has the same title" do
+    skip
+  end
 
 end
