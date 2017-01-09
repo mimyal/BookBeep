@@ -12,7 +12,8 @@
 !/log/.keep
 /tmp
 
-/test/cassettes/
+/test/cassettes/ # secrets amass
+test/cassettes/
 
 /.DS_Store
 

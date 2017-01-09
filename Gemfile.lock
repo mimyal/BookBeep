@@ -105,13 +105,7 @@ GEM
       mime-types-data (~> 3.2015)
     mime-types-data (3.2016.0521)
     mini_portile2 (2.1.0)
-    minispec-metadata (2.0.0)
-      minitest
     minitest (5.10.1)
-    minitest-vcr (1.4.0)
-      minispec-metadata (~> 2.0)
-      minitest (>= 4.7.5)
-      vcr (>= 2.9)
     multi_json (1.12.1)
     multi_xml (0.6.0)
     nokogiri (1.7.0.1)
@@ -177,7 +171,6 @@ GEM
       thread_safe (~> 0.1)
     uglifier (3.0.4)
       execjs (>= 0.3.0, < 3)
-    vcr (3.0.3)
     web-console (2.3.0)
       activemodel (>= 4.0)
       binding_of_caller (>= 0.7.2)
@@ -205,7 +198,6 @@ DEPENDENCIES
   httparty
   jbuilder (~> 2.0)
   jquery-rails
-  minitest-vcr
   rails (= 4.2.7)
   rails-pry
   sass-rails (~> 5.0)
