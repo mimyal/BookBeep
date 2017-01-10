@@ -78,13 +78,69 @@ class LibraryItemTest < ActiveSupport::TestCase
   end
 
   test "#get_media Getting a non-existing item from the database should return nil" do
+    skip
     isbn = 111111111
-    book = LibraryItem.get_media(isbn)
+    book = LibraryItem.get_media({isbn: isbn})
     assert_nil(book)
   end
 
-  test "#get_media should return the correct collection of items" do
-    skip
+  test "#get_media should return a collection of correct items" do
+    #First add the new item info
+    item1 = {
+      isbn: 9119275714,
+      title: 'Sent i november'
+    }
+    item2 = {
+      isbn: 123456789,
+      title: 'Another item'
+    }
+    item3 = {
+      isbn: 987654321,
+      title: 'Another item again'
+    }
+
+    # Then run the creation method
+    book1a = LibraryItem.add_media(item1) # test pass
+    book1b = LibraryItem.add_media(item1) # test pass
+    book2 = LibraryItem.add_media(item2)
+    book3 = LibraryItem.add_media(item3)
+    puts 'creation succeeded'
+
+    # Then call the method to be tested
+    results1isbn = LibraryItem.get_media({isbn: 9119275714}) # Should return collection of two
+    results2isbn = LibraryItem.get_media({isbn: 123456789})
+    results3isbn = LibraryItem.get_media({isbn: 987654321})
+    if results1isbn == nil || results2isbn == nil || results3isbn == nil
+      assert false
+    end
+
+    results1title = LibraryItem.get_media({title: 'Sent i november'}) # Should return collection of two
+    results2title = LibraryItem.get_media({title: 'Another item'})
+    results3title = LibraryItem.get_media({title: 'Another item again'})
+
+    results3isbn.each { |item|
+      assert_equal(item['isbn'], 987654321)
+      assert_equal(item['title'], 'Another item again')
+    }
+    results1isbn.each { |item|
+      # puts "what is this item? #{item}"
+      assert_equal(item['isbn'], 9119275714)
+      assert_equal(item['title'], 'Sent i november')
+    }
+    results2isbn.each { |item|
+      assert_equal(item['isbn'], 123456789)
+      assert_equal(item['title'], 'Another item')
+    }
+
+    results1title.each { |item|
+      assert_equal(item['isbn'], 9119275714)
+      assert_equal(item['title'], 'Sent i november')
+    }
+    # results2title.each { |item|
+    #   assert_equal(item['isbn'], 123456789)
+    #   assert_equal(item['title'], 'Another item')
+    # }
+
     #ISBN TITLE LASTNAME QUERIES
   #     params = {
   #     isbn: 9119275714, # required
@@ -117,9 +173,9 @@ class LibraryItemTest < ActiveSupport::TestCase
     dynamodb = Aws::DynamoDB::Client.new
     begin
       results = dynamodb.query(query)
-      puts "#add_media test query succeeded."
+      # puts "#add_media test query succeeded."
       assert_equal(results.items.empty?, false)
-      results.items.each{|listing|
+      results.items.each{ |listing|
         assert_equal(listing["isbn"], 9119275714)
         assert_equal(listing["title"], 'Sent i november')
       }
@@ -151,8 +207,7 @@ class LibraryItemTest < ActiveSupport::TestCase
     dynamodb = Aws::DynamoDB::Client.new
     begin
       results = dynamodb.query(query)
-      puts "#add_media test query succeeded."
-      puts "THERE ARE NO ITEMS #{results.items.empty?}"
+      # puts "#add_media test query succeeded."
       results.items.each{|listing|
       }
 
