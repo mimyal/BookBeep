@@ -46,7 +46,7 @@ class LibraryItem
     }
     puts item
 
-    # The get_media info can contain the keys: isbn (Partition), datetime_created (Sort), title (SGI) and (creator)last_name (SGI)
+    # The get_media info can contain the keys: isbn (Partition), datetime_created (Sort), title (GSI) and (creator)last_name (GSI)
 
     # First search for the isbn AND datetime_created
     # if we know what item we want (we know the primary key)
@@ -67,7 +67,7 @@ class LibraryItem
       #   return nil
       # end
     else # If we're looking for items
-      # Set up the params
+      # SET UP THE PARAMS
       # Second search for isbn only
       if item[:isbn] != nil # Partition key query
         params = {
@@ -77,20 +77,38 @@ class LibraryItem
             ":isbn" => item[:isbn]
           }
         }
-
       end
       # Third search for datetime_created only
-      if item[datetime_created] != nil
+      if item[:datetime_created] != nil
+        # NOT IMPLEMENTED
         # NO TESTS FOR THIS YET - should look the same as for item, but then we dont get a range
         # This is only used in case we are looking for a range, might be a much easier way to do this querywise
         # Return a collection within the date range
       end
-      # Forth search for SGI title
-      # Fifth search for SGI creator_last_name
-      if item[:title] != nil || item[:last_name] != nil
-        # TEST WRITING IN PROGRESS
-        #SGI params
+      # Forth search for GSI title
+      if item[:title] != nil
+        params = {
+          table_name: 'LibraryItems',
+          index_name: 'title-index',
+          select: 'ALL_PROJECTED_ATTRIBUTES',
+          key_condition_expression: 'title = :title',
+          expression_attribute_values: {
+            ':title' => item[:title]
+          }
+        }
       end
+        # Fifth search for GSI creator_last_name
+        if item[:creator_last_name] != nil
+          params = {
+            table_name: 'LibraryItems',
+            index_name: 'last-name-index',
+            select: 'ALL_PROJECTED_ATTRIBUTES',
+            key_condition_expression: 'creator_last_name = :creator_last_name',
+            expression_attribute_values: {
+              ':creator_last_name' => item[:creator_last_name]
+            }
+          }
+        end
 
       # Run query
       begin

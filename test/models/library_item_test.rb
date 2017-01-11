@@ -22,6 +22,41 @@ class LibraryItemTest < ActiveSupport::TestCase
             key_type: "RANGE" #Sort key
           }
         ],
+        global_secondary_indexes: [
+        {
+          index_name: "title-index", # required
+          key_schema: [ # required
+            {
+              attribute_name: "title", # required
+              key_type: "HASH", # required, accepts HASH, RANGE
+            },
+          ],
+          projection: { # required
+            projection_type: "KEYS_ONLY" # accepts ALL, KEYS_ONLY, INCLUDE
+          },
+          provisioned_throughput: { # required
+            read_capacity_units: 1, # required
+            write_capacity_units: 1, # required
+          },
+        },
+        {
+          index_name: "last-name-index", # required
+          key_schema: [ # required
+            {
+              attribute_name: "isbn", # required
+              key_type: "HASH", # required, accepts HASH, RANGE
+            }
+          ],
+          projection: { # required
+            projection_type: "KEYS_ONLY" # accepts ALL, KEYS_ONLY, INCLUDE
+          },
+          provisioned_throughput: { # required
+            read_capacity_units: 1, # required
+            write_capacity_units: 1, # required
+          },
+        }
+        ],
+
         attribute_definitions: [
           {
             attribute_name: "isbn",
@@ -31,6 +66,14 @@ class LibraryItemTest < ActiveSupport::TestCase
             attribute_name: "datetime_created",
             attribute_type: "N"
           },
+          {
+            attribute_name: "title",
+            attribute_type: "S"
+          },
+          {
+            attribute_name: "creator_last_name",
+            attribute_type: "S"
+          }
 
         ],
         provisioned_throughput: {
@@ -107,16 +150,23 @@ class LibraryItemTest < ActiveSupport::TestCase
     puts 'creation succeeded'
 
     # Then call the method to be tested
+    #Primary Partition Key
     results1isbn = LibraryItem.get_media({isbn: 9119275714}) # Should return collection of two
     results2isbn = LibraryItem.get_media({isbn: 123456789})
     results3isbn = LibraryItem.get_media({isbn: 987654321})
+    # Method only works if it does not return nil for any of these requests
     if results1isbn == nil || results2isbn == nil || results3isbn == nil
       assert false
     end
 
+    # GSI query
     results1title = LibraryItem.get_media({title: 'Sent i november'}) # Should return collection of two
     results2title = LibraryItem.get_media({title: 'Another item'})
     results3title = LibraryItem.get_media({title: 'Another item again'})
+    # Method only works if it does not return nil for any of these requests
+    if results1title == nil || results2title == nil || results3title == nil
+      assert false
+    end
 
     results3isbn.each { |item|
       assert_equal(item['isbn'], 987654321)
@@ -136,10 +186,10 @@ class LibraryItemTest < ActiveSupport::TestCase
       assert_equal(item['isbn'], 9119275714)
       assert_equal(item['title'], 'Sent i november')
     }
-    # results2title.each { |item|
-    #   assert_equal(item['isbn'], 123456789)
-    #   assert_equal(item['title'], 'Another item')
-    # }
+    results2title.each { |item|
+      assert_equal(item['isbn'], 123456789)
+      assert_equal(item['title'], 'Another item')
+    }
 
     #ISBN TITLE LASTNAME QUERIES
   #     params = {
