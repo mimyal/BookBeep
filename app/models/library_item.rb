@@ -4,7 +4,7 @@ class LibraryItem
   # include Aws::Record
   # include Dynamoid::Document
 
-  attr_reader :isbn, :title
+  attr_reader :isbn, :datetime_created, :title, :creator_last_name, :creator_first_name
 
 # Don't remember why these were here
   # integer_attr :isbn, hash_key: true
@@ -12,9 +12,11 @@ class LibraryItem
   # boolean_attr :active, database_attribute_name: "is_active_flag"
 
   def initialize(info)
-    @isbn = info[isbn]
-    @title = info[title] # Title required on creation (add validations)
-
+    @isbn = info[:isbn]
+    @datetime_created = info[:datetime_created]
+    @title = info[:title] # Title required on creation (add validations)
+    @creator_last_name = info[:creator_last_name]
+    @creator_first_name = info[:creator_first_name]
     # @client = Aws::DynamoDB::Client.new
 
   end
@@ -25,11 +27,8 @@ class LibraryItem
     # NOT TESTED
     # client = Aws::DynamoDB::Client.new
     # table_name = "LibraryItems"
-    # library = [] # not sure I need this
-    # if info == nil
-    #   response = client.scan(table_name: table_name)
-    #   library =  response.items
-    # end
+    # response = client.scan(table_name: table_name)
+    # library =  response.items
     # # next put these into a collection of LibraryItem /s
   end
 
@@ -37,14 +36,14 @@ class LibraryItem
   def self.get_media(info = nil)
     client = Aws::DynamoDB::Client.new
     table_name = "LibraryItems"
-    item = {}
+    item = {} #what is fed into the instance of LibraryItem
     params = {}
     library = [] # here is the return
 
     info.each { |key, value|
       item[key] = value # item[:isbn] = info[:isbn]
     }
-    puts item
+    # puts item:creator_last_name
 
     # The get_media info can contain the keys: isbn (Partition), datetime_created (Sort), title (GSI) and (creator)last_name (GSI)
 
@@ -79,7 +78,7 @@ class LibraryItem
         }
       end
       # Third search for datetime_created only
-      if item[:datetime_created] != nil
+      if item[:datetime_created] != nil # Sort key query
         # NOT IMPLEMENTED
         # NO TESTS FOR THIS YET - should look the same as for item, but then we dont get a range
         # This is only used in case we are looking for a range, might be a much easier way to do this querywise
@@ -97,57 +96,66 @@ class LibraryItem
           }
         }
       end
-        # Fifth search for GSI creator_last_name
-        if item[:creator_last_name] != nil
-          params = {
-            table_name: 'LibraryItems',
-            index_name: 'last-name-index',
-            select: 'ALL_PROJECTED_ATTRIBUTES',
-            key_condition_expression: 'creator_last_name = :creator_last_name',
-            expression_attribute_values: {
-              ':creator_last_name' => item[:creator_last_name]
-            }
+      # Fifth search for GSI creator_last_name
+      if item[:creator_last_name] != nil
+        params = {
+          table_name: 'LibraryItems',
+          index_name: 'last-name-index',
+          select: 'ALL_PROJECTED_ATTRIBUTES',
+          key_condition_expression: 'creator_last_name = :creator_last_name',
+          expression_attribute_values: {
+            ':creator_last_name' => item[:creator_last_name]
           }
-        end
+        }
+      end
 
       # Run query
       begin
         data = client.query(params)
-        puts "Method get_media query succeeded."
-        library = data.items
-        library.each{|listing|
-          # puts "The isbn is: #{listing["isbn"]}"
-          # puts "#{listing["creator_first_name"]} #{listing[creator_last_name]}: #{listing[title]}"
+        # puts "Method get_media query succeeded."
+        if data.items.empty?
+          return library = [] # data.items = [] if nothing was found
+        end
+        data.items.each { |listing|
+          info[:isbn] = listing['isbn']
+          info[:datetime_created] = listing['datetime_created']
+          info[:title] = listing['title']
+          info[:creator_first_name] = listing['creator_first_name']
+          info[:creator_last_name] = listing['creator_last_name']
+          library << LibraryItem.new(info)
         }
-        # dont return library! I want to return the LibraryItem collection
-        return data.items unless data.items.empty? # should be nil if not available
       rescue  Aws::DynamoDB::Errors::ServiceError => error
         puts "Unable to query table:"
         puts "#{error.message}"
-        puts "The parameters were: #{params}"
+        # puts "The parameters were: #{params}"
         return nil
       end # query for collection/lists of items
 
     end #if
 
-
+    return library
     # items array of objects
-    # Return the whole model object: LibraryItem.new(response)
+    # Return a collection of the whole model object: LibraryItem.new(response)
   end
 
-  def self.add_media(info)
+  def self.add_media(info) # NOTE info KEYS ARE SYMBOLS, NOT STRING item has STRING KEYS
     #Create a new client to access DynamoDB
     client = Aws::DynamoDB::Client.new
 #
     # Prepare params for inserting the instance into db
     # Gives no flexibility to add other data than these two (and they must be present)
     item = {
-      isbn: info[:isbn], # primary Partition key
-      title: info[:title],
-      datetime_created: Time.now.to_datetime.strftime('%Q').to_i, # primary Sort key
-      # creator_first_name: creator_first_name,
-      # creator_last_name: creator_last_name
+      'isbn' => info[:isbn], # primary Partition key
+      'title' => info[:title],
+      'datetime_created' => Time.now.to_datetime.strftime('%Q').to_i, # primary Sort key
     }
+    if !info[:creator_first_name].nil?
+      item['creator_first_name'] = info[:creator_first_name]
+    end
+    if !info[:creator_last_name].nil?
+      item['creator_last_name'] = info[:creator_last_name]
+    end
+    # puts "<<<<<<<< #{item}"
     params = {
       table_name: "LibraryItems",
       item: item
@@ -156,14 +164,13 @@ class LibraryItem
     # Accessing DynamoDB to add the new item
     begin
       client.put_item(params) # add new item into DynamoDB
-      puts "Added item: #{info[:title]}"
-
+      # puts "Added item: #{info[:title]} #{response}"
+      return LibraryItem.new(info)
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       puts "Unable to add item:"
       puts "#{error.message}"
     end
 
-    return LibraryItem.new(item)
   end
 
 end
