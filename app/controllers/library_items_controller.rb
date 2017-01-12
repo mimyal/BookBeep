@@ -1,7 +1,8 @@
 class LibraryItemsController < ApplicationController
-  before_action :dynamodb_setup
+  before_action :dynamodb_setup #, :require_login
   def index
-      @media_search = LibraryItem.get_media(item_params)
+    raise
+      @library_items = LibraryItem.get_media(item_params)
   end
 
 

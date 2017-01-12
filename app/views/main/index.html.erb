@@ -15,9 +15,12 @@
 
 <main>
 
-<div class="">
-<%= select_tag(:library_item, options_for_select([['ISBN', :isbn], ['Title', :title], ['Last Name', :creator_last_name]], :isbn)) %>
-
+<div class="", id="search-form">
+<%= form_tag(library_items_path, :method => "get") do %>
+    <%= select_tag(:search_key, options_for_select([['ISBN', :isbn], ['Title', :title], ['Last Name', :creator_last_name]], :isbn))%>
+    <%= text_field_tag :search_value, params[:search_value], placeholder: "Search for #{params[:search_value]}" %>
+    <%= submit_tag "Search", :name => nil  %>
+<% end %>
 </div>
 
 
