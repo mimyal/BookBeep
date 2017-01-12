@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hello world</title>
+  </head>
+  <body>
+    <h1>Book Beep</h1>
+    <h2>Search the royal database</h2>
+
+    <!-- Button to add new media -->
+    <div>
+      <%= link_to "Add more media", library_items_path %>
+    </div>
+
+<main>
+
+<div class="">
+<%= select_tag(:library_item, options_for_select([['ISBN', :isbn], ['Title', :title], ['Last Name', :creator_last_name]], :isbn)) %>
+
+</div>
+
+
+</main>
+
+
+    <!-- Button to list all media items -->
+      <%= link_to "List catalogue", library_items_path %>
+    <!-- List ten most popular media items -->
+<h2>- där ditt bibliotek sparas på molnet</h2>
+
+
+  </body>
+</html>

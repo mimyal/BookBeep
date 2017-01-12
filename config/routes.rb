@@ -1,5 +1,10 @@
 Rails.application.routes.draw do
 
+  root 'home#index' #For Cognito login, if it happens
+
+  get '/main', controller: 'main', action: 'index' # different from root because of Cognito
+
+  get 'library_items', controller: 'library_items', action: 'index'
 
   ## # From MEDIA RANKER
     # root 'main#index'

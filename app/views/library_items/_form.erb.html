@@ -1,0 +1,23 @@
+<%= form_for @media_search, method: :get do |f| %>
+  <p>
+    <%= f.label :title %>:
+    <%= f.text_field :title %>
+  </p>
+
+  <p>
+    <%= f.label :isbn %>:
+    <%= f.text_field :isbn %>
+  </p>
+
+  <p>
+    <%= f.label :creator_first_name %>:
+    <%= f.text_field :creator_first_name %>
+  </p>
+
+  <p>
+    <%= f.label :creator_last_name %>:
+    <%= f.text_field :creator_last_name %>
+  </p>
+
+  <%= f.submit "Search" %>
+<% end %>
