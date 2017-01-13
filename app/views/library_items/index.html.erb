@@ -3,7 +3,6 @@
 <%= button_to "Library", main_path, method: :get  %>
 <%= button_to "Add new item", main_path, method: :get  %>
 <!--List all the items from the library search here -->
-<% @library_items.each do |listing| %>
 
 <section class="medium-10 large-10 column">
   <table>
@@ -11,15 +10,13 @@
       <tr>
         <th scope="col">ISBN</th>
         <th scope="col">Title</th>
-        <% if listing.creator_last_name || listing.creator_first_name %>
-          <th scope="col">Creator</th>
-        <% end %>
-        <th scope="col">Edit</th>
+        <th scope="col">Creator</th>
+        <th scope="col">Date Added</th>
         <th scope="col">Delete</th>
-        <th scope="col">New Copy</th>
       </tr>
     </thead>
     <tbody>
+      <% @library_items.each do |listing| %>
       <tr>
         <td scope="row">
           <%= "#{listing.isbn}" %>
@@ -44,13 +41,11 @@
           <%= link_to "#{listing.datetime_created}", root_path %>
         </td>
         <td>
-          <%= link_to "Edit", root_path, method: :get, class="hollow button" %>
         </td>
         <td>
-          <%= link_to "Delete", root_path, method :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>
+          <%= link_to "Delete", root_path, method: :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>
         </td>
         <td>
-          <%= link_to "New copy", root_path, method: :get, class="hollow button" %>
         </td>
       </tr>
       <% end %>

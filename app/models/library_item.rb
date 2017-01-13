@@ -12,7 +12,7 @@ class LibraryItem
   # boolean_attr :active, database_attribute_name: "is_active_flag"
 
   def initialize(info)
-    @isbn = info[:isbn]
+    @isbn = info['isbn']
     @datetime_created = info[:datetime_created]
     @title = info[:title] # Title required on creation (add validations)
     @creator_last_name = info[:creator_last_name]
@@ -33,29 +33,26 @@ class LibraryItem
   end
 
   # Method that will return a collection of library items depending on isbn, title or last name (partition key, GSIs)
-  def self.get_media(info = nil)
+  def self.get_media(info)
     client = Aws::DynamoDB::Client.new
     table_name = "LibraryItems"
-    item = {} #what is fed into the instance of LibraryItem
     params = {}
-    library = [] # here is the return
-
-    info.each { |key, value|
-      item[key] = value # item[:isbn] = info[:isbn]
-    }
-    # puts item:creator_last_name
+    library = [] # here is the return collection of instances of LibraryItem
+# raise
+    # puts info[:creator_last_name]
 
     # The get_media info can contain the keys: isbn (Partition), datetime_created (Sort), title (GSI) and (creator)last_name (GSI)
 
-    # First search for the isbn AND datetime_created
+    # STEP 1: SET UP THE PARAMS
+    # First search for a specific item using the isbn AND datetime_created
     # if we know what item we want (we know the primary key)
-    if item[:isbn] != nil && item[:datetime_created] != nil
+    if info['isbn'] != nil && info[:datetime_created] != nil
       # NOT YET IN TESTS
       # params = {
       #   table_name: table_name,
       #   key: {
-      #   'isbn' => item[:isbn],
-      #   'datetime_created' => item[:datetime_created]
+      #   'isbn' => info['isbn'],
+      #   'datetime_created' => info[:datetime_created]
       # }}
       # response = client.get_item(params)
       # puts 'Ensure this is the item wanted:' + response.item
@@ -66,58 +63,60 @@ class LibraryItem
       #   return nil
       # end
     else # If we're looking for items
-      # SET UP THE PARAMS
       # Second search for isbn only
-      if item[:isbn] != nil # Partition key query
+      if info['isbn'] != nil # Partition key query
+        puts "INFO INFO #{info}"
         params = {
           table_name: table_name,
           key_condition_expression: "isbn = :isbn", # because the db does not want to recompile the query if it already has it
           expression_attribute_values: {
-            ":isbn" => item[:isbn]
+            ":isbn" => info['isbn']
           }
         }
+        puts "PARAMS PARAMS #{params}"
       end
       # Third search for datetime_created only
-      if item[:datetime_created] != nil # Sort key query
+      if info[:datetime_created] != nil # Sort key query
         # NOT IMPLEMENTED
-        # NO TESTS FOR THIS YET - should look the same as for item, but then we dont get a range
+        # NO TESTS FOR THIS YET - should look the same as for info, but then we dont get a range
         # This is only used in case we are looking for a range, might be a much easier way to do this querywise
         # Return a collection within the date range
       end
       # Forth search for GSI title
-      if item[:title] != nil
+      if info[:title] != nil
         params = {
-          table_name: 'LibraryItems',
+          table_name: table_name,
           index_name: 'title-index',
           select: 'ALL_PROJECTED_ATTRIBUTES',
           key_condition_expression: 'title = :title',
           expression_attribute_values: {
-            ':title' => item[:title]
+            ':title' => info[:title]
           }
         }
       end
       # Fifth search for GSI creator_last_name
-      if item[:creator_last_name] != nil
+      if info[:creator_last_name] != nil
         params = {
-          table_name: 'LibraryItems',
+          table_name: table_name,
           index_name: 'last-name-index',
           select: 'ALL_PROJECTED_ATTRIBUTES',
           key_condition_expression: 'creator_last_name = :creator_last_name',
           expression_attribute_values: {
-            ':creator_last_name' => item[:creator_last_name]
+            ':creator_last_name' => info[:creator_last_name]
           }
         }
       end
 
-      # Run query
+      # STEP 2: RUN QUERY
       begin
+        # raise
         data = client.query(params)
         # puts "Method get_media query succeeded."
         if data.items.empty?
-          return library = [] # data.items = [] if nothing was found
+          return library # = [] # data.items = [] if nothing was found
         end
         data.items.each { |listing|
-          info[:isbn] = listing['isbn']
+          info['isbn'] = listing['isbn']
           info[:datetime_created] = listing['datetime_created']
           info[:title] = listing['title']
           info[:creator_first_name] = listing['creator_first_name']

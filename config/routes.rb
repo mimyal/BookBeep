@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   get '/main', controller: 'main', action: 'index' # different from root because of Cognito
 
-  get 'library_items', controller: 'library_items', action: 'index'
+  get '/library_items', controller: 'library_items', action: 'index'
 
   ## # From MEDIA RANKER
     # root 'main#index'

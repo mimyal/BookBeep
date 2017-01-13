@@ -118,51 +118,53 @@ class LibraryItemTest < ActiveSupport::TestCase
   end
 
   test "#get_media Getting a non-existing item from the database should return nil" do
-    skip
-    isbn = 111111111
-    book = LibraryItem.get_media({isbn: isbn})
-    assert_nil(book)
+    isbn = 111111111 # Partition key
+    book_collection = LibraryItem.get_media({'isbn' => isbn})
+    assert_equal(book_collection, [])
+    title = "Not a book" # Secondary Index
+    book_collection = LibraryItem.get_media({title: title})
+    assert_equal(book_collection, [])
   end
 
   test "#get_media should return a collection of LibraryItem with correct values" do
     #First add the new item info
-    item1 = {
+    info1 = {
       isbn: 9119275714,
       title: 'Sent i november',
       creator_first_name: 'Tove',
       creator_last_name: 'Jansson'
     }
-    item2 = {
+    info2 = {
       isbn: 123456789,
       title: 'Another item'
     }
-    item3 = {
+    info3 = {
       isbn: 987654321,
       title: 'Another item again',
       creator_last_name: 'NNN'
     }
 
-    # Then run the creation method
-    LibraryItem.add_media(item1) # test pass
-    LibraryItem.add_media(item1) # test pass
-    LibraryItem.add_media(item2)
-    LibraryItem.add_media(item3)
-    # puts 'creation succeeded'
+    # Second run the creation method
+    LibraryItem.add_media(info1) # tests passed
+    LibraryItem.add_media(info1)
+    LibraryItem.add_media(info2)
+    LibraryItem.add_media(info3)
 
     # Then call the method to be tested
     #Primary Partition Key query
-    results1isbn = LibraryItem.get_media({isbn: 9119275714}) # Should return collection of two
-    results2isbn = LibraryItem.get_media({isbn: 123456789})
-    results3isbn = LibraryItem.get_media({isbn: 987654321})
+    results1isbn = LibraryItem.get_media({'isbn' => 9119275714}) # Should return collection of two
+    results2isbn = LibraryItem.get_media({'isbn' => 123456789})
+    results3isbn = LibraryItem.get_media({'isbn' => 987654321})
     # Method only works if it does not return nil for any of these requests
     if results1isbn == nil || results2isbn == nil || results3isbn == nil
       assert false, 'Partition key query returned nil'
     end
+    puts "<<<<<<#{results3isbn}"
     assert_equal(results1isbn.count, 2) # added two in that 'drawer'
     # Primary partition key test
     results3isbn.each { |item|
-      assert_equal(item.isbn, 987654321)
-      assert_equal(item.title, 'Another item again')
+      assert_equal(987654321, item.isbn)
+      assert_equal('Another item again', item.title)
     }
     results1isbn.each { |item|
       # puts "what is this item? #{item}"
