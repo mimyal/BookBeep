@@ -1,26 +1,32 @@
 require 'aws-sdk'
 
 class LibraryItem
+  include ActiveModel::Validations
   # include Aws::Record
-  # include Dynamoid::Document
+
+  validates :isbn, presence: true #, length: { is: (9 || 12) } # Primary Partition Key (Libris seem to have some unexpected length ISBNs)
+  validates :datetime_created, presence: true # Primary Sort Key
+  validates :title, presence: true # Global Secondary Index
 
   attr_reader :isbn, :datetime_created, :title, :creator_last_name, :creator_first_name
 
-# Don't remember why these were here
-  # integer_attr :isbn, hash_key: true
-  # string_attr  :datetime_created, range_key: true
-  # boolean_attr :active, database_attribute_name: "is_active_flag"
-
   def initialize(info)
+    # CHECK that if the ISBN is already in the BB database, the title matches the existing record before creation
+
     @isbn = info['isbn']
     @datetime_created = info['datetime_created']
     @title = info['title'] # Title required on creation (add validations)
     @creator_last_name = info['creator_last_name']
     @creator_first_name = info['creator_first_name']
-    # @client = Aws::DynamoDB::Client.new
-
+    @uri_id = info['uri_id']
   end
 
+# Method use Libris to return the info for a new library item
+# Maybe also add_media to return an instance of LibraryItem and already have it added to DB
+# Warning to check the item info before DBing it
+  def self.libris_search(isbn)
+    return LibrisWrapper.get_book(isbn)
+  end
 
   # To list all items in BookBeep DynamoDB
   def self.all

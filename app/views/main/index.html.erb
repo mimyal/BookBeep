@@ -1,40 +1,49 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Hello world</title>
-  </head>
-  <body>
-    <h1>Book Beep</h1>
-    <h2>Search the royal database</h2>
+<head>
+  <meta charset="utf-8">
+  <title>BookBeep</title>
+</head>
+<body>
+  <h1>Book Beep</h1>
 
-    <!-- Button to add new media -->
-    <div>
-      <%= link_to "Add more media", library_items_path %>
+  <main>
+  <!-- ERROR HANDLING HERE? -->
+  <%if flash[:notice]%>
+  <h3 id="notice"><%= flash[:notice] %></h3>
+  <%end%>
+
+<!-- PATH TO NEW ITEMS -->
+    <div class="", id="libris-search-form">
+      <h2>Add a new items through Libris</h2>
+      <%= form_tag(libris_path, :method => "get") do %>
+        <%= text_field_tag :isbn, params[:isbn], placeholder: "Search for #{params[:isbn]}" %>
+        <%= submit_tag "Add New Item", :name => nil  %>
+      <% end %>
     </div>
 
-<main>
-
-<div class="", id="search-form">
-<%if flash[:notice]%>
-  <h3 id="notice"><%= flash[:notice] %></h3>
-<%end%>
-<%= form_tag(library_items_path, :method => "get") do %>
-    <%= select_tag(:search_key, options_for_select([['ISBN', :isbn], ['Title', :title], ['Last Name', :creator_last_name]], :isbn))%>
-    <%= text_field_tag :search_value, params[:search_value], placeholder: "Search for #{params[:search_value]}" %>
-    <%= submit_tag "Search", :name => nil  %>
-<% end %>
-</div>
-
-
-</main>
+<!-- PATH TO VIEW ITEMS -->
+    <div class="", id="db-search-form">
+      <h2>Search for items in the Book Beep database</h2>
+      <%if flash[:notice]%>
+      <%end%>
+      <%= form_tag(library_items_path, :method => "get") do %>
+        <%= select_tag(:search_key, options_for_select([['ISBN', :isbn], ['Title', :title], ['Last Name', :creator_last_name]], :isbn))%>
+        <%= text_field_tag :search_value, params[:search_value], placeholder: "Search for #{params[:search_value]}" %>
+        <%= submit_tag "Search", :name => nil  %>
+      <% end %>
+    </div>
 
 
-    <!-- Button to list all media items -->
-      <%= link_to "List catalogue", library_items_path %>
-    <!-- List ten most popular media items -->
-<h2>- där ditt bibliotek sparas på molnet</h2>
+  </main>
 
 
-  </body>
+  <!-- Button to list all media items -->
+  <!-- NOT IMPLEMENTED -->
+  <%= link_to "List catalogue", library_items_path %>
+  <!-- List ten most popular media items -->
+  <h2>- där ditt bibliotek sparas på molnet</h2>
+
+
+</body>
 </html>

@@ -12,8 +12,8 @@ gem 'aws-sdk-rails'
 gem 'aws-sdk-resources', '~> 2.5'
 gem 'aws-record', '~> 1.0'
 
-# Might be replaced by aws-record?
-gem 'dynamoid', '~> 1'
+# # Might be replaced by aws-record?
+# gem 'dynamoid', '~> 1'
 
 # # Elastic Beanstalk wants this too
 # # Use Puma as the app server

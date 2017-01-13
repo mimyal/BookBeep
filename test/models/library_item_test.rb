@@ -117,6 +117,19 @@ class LibraryItemTest < ActiveSupport::TestCase
     assert true
   end
 
+  test "#libris_search(isbn) should return a single instance of LibraryItem" do
+     isbn = 9119275714
+     actual_book = LibraryItem.libris_search(isbn)
+     assert_equal LibraryItem, actual_book.class
+     assert_equal('Sent i november', actual_book.title)
+  end
+
+  test "#libris_search should return nil for an unknown isbn" do
+    isbn = 98192121921219218291821221
+    response = LibraryItem.libris_search(isbn)
+    assert_nil response
+  end
+
   test "#get_media Getting a non-existing item from the database should return nil" do
     isbn = 111111111 # Partition key
     book_collection = LibraryItem.get_media({'isbn' => isbn})
