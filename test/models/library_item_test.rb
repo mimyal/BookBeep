@@ -122,26 +122,26 @@ class LibraryItemTest < ActiveSupport::TestCase
     book_collection = LibraryItem.get_media({'isbn' => isbn})
     assert_equal(book_collection, [])
     title = "Not a book" # Secondary Index
-    book_collection = LibraryItem.get_media({title: title})
+    book_collection = LibraryItem.get_media({'title' => title})
     assert_equal(book_collection, [])
   end
 
   test "#get_media should return a collection of LibraryItem with correct values" do
     #First add the new item info
     info1 = {
-      isbn: 9119275714,
-      title: 'Sent i november',
-      creator_first_name: 'Tove',
-      creator_last_name: 'Jansson'
+      'isbn' => 9119275714,
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_last_name' => 'Jansson'
     }
     info2 = {
-      isbn: 123456789,
-      title: 'Another item'
+      'isbn' => 123456789,
+      'title' => 'Another item'
     }
     info3 = {
-      isbn: 987654321,
-      title: 'Another item again',
-      creator_last_name: 'NNN'
+      'isbn' => 987654321,
+      'title' => 'Another item again',
+      'creator_last_name' => 'NNN'
     }
 
     # Second run the creation method
@@ -159,7 +159,6 @@ class LibraryItemTest < ActiveSupport::TestCase
     if results1isbn == nil || results2isbn == nil || results3isbn == nil
       assert false, 'Partition key query returned nil'
     end
-    puts "<<<<<<#{results3isbn}"
     assert_equal(results1isbn.count, 2) # added two in that 'drawer'
     # Primary partition key test
     results3isbn.each { |item|
@@ -178,8 +177,8 @@ class LibraryItemTest < ActiveSupport::TestCase
     }
 
     # GSI query
-    results1title = LibraryItem.get_media({title: 'Sent i november'}) # Should return collection of two
-    results3surname = LibraryItem.get_media({creator_last_name: 'NNN'})
+    results1title = LibraryItem.get_media({'title' => 'Sent i november'}) # Should return collection of two
+    results3surname = LibraryItem.get_media({'creator_last_name' => 'NNN'})
     # Method only works if it does not return nil for any of these requests
     if results1title == nil || results3surname == nil
       assert false, 'GSI query returned nil'
@@ -202,10 +201,10 @@ class LibraryItemTest < ActiveSupport::TestCase
   test "#add_media should add item to DynamoDB" do
     # First the new item info
     item = {
-      isbn: 9119275714,
-      title: 'Sent i november',
-      creator_first_name: 'Tove',
-      creator_last_name: 'Jansson'
+      'isbn' => 9119275714,
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_last_name' => 'Jansson'
     }
     # Then run the creation method
     LibraryItem.add_media(item)
@@ -215,7 +214,7 @@ class LibraryItemTest < ActiveSupport::TestCase
       table_name: "LibraryItems",
       key_condition_expression: "isbn = :isbn",
       expression_attribute_values: {
-        ":isbn" => item[:isbn]
+        ":isbn" => item['isbn']
       }
     }
     # RUN QUERY
@@ -238,8 +237,8 @@ class LibraryItemTest < ActiveSupport::TestCase
   test "#add_media a new item should increase DynamoDB table by one" do
     # First the new item info
     item = {
-      :isbn => 9119275714,
-      :title => 'Sent i november'
+      'isbn' => 9119275714,
+      'title' => 'Sent i november'
     }
     # Then run the creation method
     LibraryItem.add_media(item)
@@ -249,7 +248,7 @@ class LibraryItemTest < ActiveSupport::TestCase
       table_name: "LibraryItems",
       key_condition_expression: "isbn = :isbn",
       expression_attribute_values: {
-        ":isbn" => item[:isbn]
+        ":isbn" => item['isbn']
       }
     }
     # RUN QUERY
@@ -274,7 +273,7 @@ class LibraryItemTest < ActiveSupport::TestCase
       LibraryItem.add_media(item)
       results = dynamodb.query(query)
       results.items.each { |listing| # This isbn is used two times for two items
-        assert(listing['isbn'], item[:isbn])
+        assert(listing['isbn'], item['isbn'])
       }
     end
   end # test
@@ -282,19 +281,19 @@ class LibraryItemTest < ActiveSupport::TestCase
   test "#add_media should return an instance of LibraryItem with the correct values" do
     # First the new item info
     item = {
-      :isbn => 9119275714,
-      :title => 'Sent i november',
-      :creator_first_name => 'Tove',
-      :creator_last_name => 'Jansson'
+      'isbn' => 9119275714,
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_last_name' => 'Jansson'
     }
     # Then run the creation method
     book = LibraryItem.add_media(item)
     assert_instance_of(LibraryItem, book)
 
-    assert_equal(book.isbn, item[:isbn])
-    assert_equal(book.title, item[:title])
-    assert_equal(book.creator_first_name, item[:creator_first_name])
-    assert_equal(book.creator_last_name, item[:creator_last_name])
+    assert_equal(book.isbn, item['isbn'])
+    assert_equal(book.title, item['title'])
+    assert_equal(book.creator_first_name, item['creator_first_name'])
+    assert_equal(book.creator_last_name, item['creator_last_name'])
 
   end
   test "#add_media should not add media that has an isbn of other than 6 (for media without barcode), 9 or 12 digits" do

@@ -10,9 +10,12 @@ class LibraryItemsController < ApplicationController
       @info[params[:search_key]] = params[:search_value]
     end
 
-# raise
     @library_items = LibraryItem.get_media(@info) #WEAK PARAMS
-
+    # raise
+    if @library_items.empty?
+      flash[:notice] = 'The search returned no items'
+      redirect_to main_path
+    end
   end
 
 

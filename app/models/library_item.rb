@@ -13,10 +13,10 @@ class LibraryItem
 
   def initialize(info)
     @isbn = info['isbn']
-    @datetime_created = info[:datetime_created]
-    @title = info[:title] # Title required on creation (add validations)
-    @creator_last_name = info[:creator_last_name]
-    @creator_first_name = info[:creator_first_name]
+    @datetime_created = info['datetime_created']
+    @title = info['title'] # Title required on creation (add validations)
+    @creator_last_name = info['creator_last_name']
+    @creator_first_name = info['creator_first_name']
     # @client = Aws::DynamoDB::Client.new
 
   end
@@ -39,20 +39,20 @@ class LibraryItem
     params = {}
     library = [] # here is the return collection of instances of LibraryItem
 # raise
-    # puts info[:creator_last_name]
+    # puts info['creator_last_name']
 
     # The get_media info can contain the keys: isbn (Partition), datetime_created (Sort), title (GSI) and (creator)last_name (GSI)
 
     # STEP 1: SET UP THE PARAMS
     # First search for a specific item using the isbn AND datetime_created
     # if we know what item we want (we know the primary key)
-    if info['isbn'] != nil && info[:datetime_created] != nil
+    if info['isbn'] != nil && info['datetime_created'] != nil
       # NOT YET IN TESTS
       # params = {
       #   table_name: table_name,
       #   key: {
       #   'isbn' => info['isbn'],
-      #   'datetime_created' => info[:datetime_created]
+      #   'datetime_created' => info['datetime_created']
       # }}
       # response = client.get_item(params)
       # puts 'Ensure this is the item wanted:' + response.item
@@ -65,7 +65,6 @@ class LibraryItem
     else # If we're looking for items
       # Second search for isbn only
       if info['isbn'] != nil # Partition key query
-        puts "INFO INFO #{info}"
         params = {
           table_name: table_name,
           key_condition_expression: "isbn = :isbn", # because the db does not want to recompile the query if it already has it
@@ -73,7 +72,6 @@ class LibraryItem
             ":isbn" => info['isbn']
           }
         }
-        puts "PARAMS PARAMS #{params}"
       end
       # Third search for datetime_created only
       if info[:datetime_created] != nil # Sort key query
@@ -83,30 +81,33 @@ class LibraryItem
         # Return a collection within the date range
       end
       # Forth search for GSI title
-      if info[:title] != nil
+      if info['title'] != nil
         params = {
           table_name: table_name,
           index_name: 'title-index',
           select: 'ALL_PROJECTED_ATTRIBUTES',
           key_condition_expression: 'title = :title',
           expression_attribute_values: {
-            ':title' => info[:title]
+            ':title' => info['title']
           }
         }
       end
       # Fifth search for GSI creator_last_name
-      if info[:creator_last_name] != nil
+      if info['creator_last_name'] != nil
         params = {
           table_name: table_name,
           index_name: 'last-name-index',
           select: 'ALL_PROJECTED_ATTRIBUTES',
           key_condition_expression: 'creator_last_name = :creator_last_name',
           expression_attribute_values: {
-            ':creator_last_name' => info[:creator_last_name]
+            ':creator_last_name' => info['creator_last_name']
           }
         }
       end
-
+      # Check that params is not empty
+      if params.empty?
+        return library # = [] # data.items = [] if nothing was found
+      end
       # STEP 2: RUN QUERY
       begin
         # raise
@@ -117,17 +118,17 @@ class LibraryItem
         end
         data.items.each { |listing|
           info['isbn'] = listing['isbn']
-          info[:datetime_created] = listing['datetime_created']
-          info[:title] = listing['title']
-          info[:creator_first_name] = listing['creator_first_name']
-          info[:creator_last_name] = listing['creator_last_name']
+          info['datetime_created'] = listing['datetime_created']
+          info['title'] = listing['title']
+          info['creator_first_name'] = listing['creator_first_name']
+          info['creator_last_name'] = listing['creator_last_name']
           library << LibraryItem.new(info)
         }
       rescue  Aws::DynamoDB::Errors::ServiceError => error
         puts "Unable to query table:"
         puts "#{error.message}"
         # puts "The parameters were: #{params}"
-        return nil
+        return []
       end # query for collection/lists of items
 
     end #if
@@ -137,33 +138,32 @@ class LibraryItem
     # Return a collection of the whole model object: LibraryItem.new(response)
   end
 
-  def self.add_media(info) # NOTE info KEYS ARE SYMBOLS, NOT STRING item has STRING KEYS
+  def self.add_media(info)
     #Create a new client to access DynamoDB
     client = Aws::DynamoDB::Client.new
 #
     # Prepare params for inserting the instance into db
     # Gives no flexibility to add other data than these two (and they must be present)
     item = {
-      'isbn' => info[:isbn], # primary Partition key
-      'title' => info[:title],
+      'isbn' => info['isbn'].to_i, # primary Partition key
+      'title' => info['title'],
       'datetime_created' => Time.now.to_datetime.strftime('%Q').to_i, # primary Sort key
     }
-    if !info[:creator_first_name].nil?
-      item['creator_first_name'] = info[:creator_first_name]
+    if !info['creator_first_name'].nil?
+      item['creator_first_name'] = info['creator_first_name']
     end
-    if !info[:creator_last_name].nil?
-      item['creator_last_name'] = info[:creator_last_name]
+    if !info['creator_last_name'].nil?
+      item['creator_last_name'] = info['creator_last_name']
     end
-    # puts "<<<<<<<< #{item}"
+
     params = {
       table_name: "LibraryItems",
       item: item
     }
-
     # Accessing DynamoDB to add the new item
     begin
       client.put_item(params) # add new item into DynamoDB
-      # puts "Added item: #{info[:title]} #{response}"
+      # puts "Added item: #{info['title']} #{response}"
       return LibraryItem.new(info)
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       puts "Unable to add item:"
