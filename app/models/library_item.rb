@@ -8,10 +8,11 @@ class LibraryItem
   validates :datetime_created, presence: true # Primary Sort Key
   validates :title, presence: true # Global Secondary Index
 
-  attr_reader :isbn, :datetime_created, :title, :creator_last_name, :creator_first_name
+  attr_accessor :isbn, :datetime_created, :title, :creator_last_name, :creator_first_name
 
   def initialize(info)
     # CHECK that if the ISBN is already in the BB database, the title matches the existing record before creation
+
 
     @isbn = info['isbn']
     @datetime_created = info['datetime_created']
@@ -21,11 +22,11 @@ class LibraryItem
     @uri_id = info['uri_id']
   end
 
-# Method use Libris to return the info for a new library item
-# Maybe also add_media to return an instance of LibraryItem and already have it added to DB
-# Warning to check the item info before DBing it
+# Method returns an instance of LibraryItem, if successful
+# Method returns NIL if the search is unsuccessful/ISBN not found
   def self.libris_search(isbn)
-    return LibrisWrapper.get_book(isbn)
+    @library_item = LibrisWrapper.get_book(isbn)
+    return @library_item
   end
 
   # To list all items in BookBeep DynamoDB
@@ -43,11 +44,7 @@ class LibraryItem
     client = Aws::DynamoDB::Client.new
     table_name = "LibraryItems"
     params = {}
-    library = [] # here is the return collection of instances of LibraryItem
-# raise
-    # puts info['creator_last_name']
-
-    # The get_media info can contain the keys: isbn (Partition), datetime_created (Sort), title (GSI) and (creator)last_name (GSI)
+    @library = [] # here is the return collection of instances of LibraryItem
 
     # STEP 1: SET UP THE PARAMS
     # First search for a specific item using the isbn AND datetime_created
@@ -64,7 +61,7 @@ class LibraryItem
       # puts 'Ensure this is the item wanted:' + response.item
       # puts 'What to do with response.item? Build a new instance of LibraryItem'
       # if response.item != nil
-      #   library << response.item
+      #   @library << response.item
       # else
       #   return nil
       # end
@@ -112,7 +109,7 @@ class LibraryItem
       end
       # Check that params is not empty
       if params.empty?
-        return library # = [] # data.items = [] if nothing was found
+        return @library # = [] # data.items = [] if nothing was found
       end
       # STEP 2: RUN QUERY
       begin
@@ -120,7 +117,7 @@ class LibraryItem
         data = client.query(params)
         # puts "Method get_media query succeeded."
         if data.items.empty?
-          return library # = [] # data.items = [] if nothing was found
+          return @library # = [] # data.items = [] if nothing was found
         end
         data.items.each { |listing|
           info['isbn'] = listing['isbn']
@@ -128,26 +125,22 @@ class LibraryItem
           info['title'] = listing['title']
           info['creator_first_name'] = listing['creator_first_name']
           info['creator_last_name'] = listing['creator_last_name']
-          library << LibraryItem.new(info)
+          @library << LibraryItem.new(info)
         }
       rescue  Aws::DynamoDB::Errors::ServiceError => error
         puts "Unable to query table:"
         puts "#{error.message}"
         # puts "The parameters were: #{params}"
-        return []
+        return @library
       end # query for collection/lists of items
-
     end #if
-
-    return library
-    # items array of objects
-    # Return a collection of the whole model object: LibraryItem.new(response)
+    return @library
   end
 
   def self.add_media(info)
     #Create a new client to access DynamoDB
     client = Aws::DynamoDB::Client.new
-#
+
     # Prepare params for inserting the instance into db
     # Gives no flexibility to add other data than these two (and they must be present)
     item = {
@@ -166,16 +159,87 @@ class LibraryItem
       table_name: "LibraryItems",
       item: item
     }
-    # Accessing DynamoDB to add the new item
-    begin
-      client.put_item(params) # add new item into DynamoDB
-      # puts "Added item: #{info['title']} #{response}"
-      return LibraryItem.new(info)
-    rescue  Aws::DynamoDB::Errors::ServiceError => error
-      puts "Unable to add item:"
-      puts "#{error.message}"
+    # @todo NO TEST FOR THIS YET
+    # if @library_item.valid?
+
+    @library_item = LibraryItem.new(item)
+
+      # Accessing DynamoDB to add the new item
+      begin
+        client.put_item(params) # add new item into DynamoDB
+      rescue  Aws::DynamoDB::Errors::ServiceError => error
+        puts "Unable to add item:"
+        puts "#{error.message}"
+        flash[:notice] = "Unable to add item:" + "#{error.message}" # don't know if this works
+      end
+      return @library_item
+    # end
+    return info
+  end
+
+  def add_media
+    #Create a new client to access DynamoDB
+    client = Aws::DynamoDB::Client.new
+
+    # Prepare params for inserting the instance into db
+    # Gives no flexibility to add other data than these two (and they must be present)
+    item = {
+      'isbn' => @isbn.to_i, # primary Partition key
+      'title' => @title,
+      'datetime_created' => Time.now.to_datetime.strftime('%Q').to_i, # primary Sort key
+    }
+    if !@creator_first_name.nil?
+      item['creator_first_name'] = @creator_first_name
+    end
+    if !@creator_last_name.nil?
+      item['creator_last_name'] = @creator_last_name
     end
 
+    params = {
+      table_name: "LibraryItems",
+      item: item
+    }
+
+    # @todo NO TEST FOR THIS YET
+    # if @library_item.valid?
+
+    # Might not be the done thing, instead change what needs to be changed?
+    @library_item = LibraryItem.new(item)
+
+      # Accessing DynamoDB to add the new item
+      begin
+        client.put_item(params) # add new item into DynamoDB
+      rescue  Aws::DynamoDB::Errors::ServiceError => error
+        puts "Unable to add item:"
+        puts "#{error.message}"
+        flash[:notice] = "Unable to add item:" + "#{error.message}" # don't know if this works
+      end
+      return @library_item
+    # end
+    return info
+  end
+
+# @todo test test
+  # QUERY IF ISBN ALREADY EXISTS IN DATABASE
+  # return list of objects, if any, or []
+  def check_copies
+  #   # Set up query
+  #   query = {
+  #     table_name: "LibraryItems",
+  #     key_condition_expression: "isbn = :isbn",
+  #     expression_attribute_values: {
+  #       ":isbn" => item['isbn']
+  #     }
+  #   }
+  #   # Run query
+  #   begin
+  #     results = dynamodb.query(query)
+  #   rescue  Aws::DynamoDB::Errors::ServiceError => error
+  #     puts "#add_media test: Unable to query table:"
+  #     puts "#{error.message}"
+  #   end
+  #
+  #
   end
 
 end

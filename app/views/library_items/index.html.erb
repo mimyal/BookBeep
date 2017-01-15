@@ -1,5 +1,9 @@
 <%= button_to "Library Main", main_path, method: :get  %>
 
+<!-- ERROR HANDLING HERE? -->
+<%if flash[:notice]%>
+<h3 id="notice"><%= flash[:notice] %></h3>
+<%end%>
 
 <section class="medium-10 large-10 column">
   <h2>Search results for <%= "#{params[:search_key].upcase}: #{params[:search_value]}" %></h2>

@@ -34,7 +34,13 @@ class LibrisWrapper
         'creator_first_name' => author_first,
         'uri_id' => identifier # all BB db items will have a value for this
       }
-      return LibraryItem.new(info)
+      library_item = LibraryItem.new(info)
+      # @todo NOT IMPLEMENTED: Check for valid - test?
+      # if !library_item.valid?
+      #   return nil
+      # end
+      return library_item
+
     end
 
   end

@@ -6,6 +6,8 @@ Rails.application.routes.draw do
 
   get '/library_items', controller: 'library_items', action: 'index'
 
+  post '/library_items', controller: 'library_items', action: 'create', as: 'create_library_item'
+
   ## # From MEDIA RANKER
     # root 'main#index'
     # resources :movies, controller: 'media_listings', type: "Movie", except:  [:create]

@@ -268,12 +268,6 @@ class LibraryItemTest < ActiveSupport::TestCase
     dynamodb = Aws::DynamoDB::Client.new
     begin
       results = dynamodb.query(query)
-      # puts "#add_media test query succeeded."
-      # results.items.each{ |listing|
-      #   assert false, 'whats this?'
-      #
-      # }
-
     rescue  Aws::DynamoDB::Errors::ServiceError => error
       assert false
       puts "#add_media test: Unable to query table:"
@@ -285,6 +279,7 @@ class LibraryItemTest < ActiveSupport::TestCase
     # Then run the creation method a second time (new item, new time)
       LibraryItem.add_media(item)
       results = dynamodb.query(query)
+      assert_equal(2, results.items.length)
       results.items.each { |listing| # This isbn is used two times for two items
         assert(listing['isbn'], item['isbn'])
       }
@@ -309,11 +304,60 @@ class LibraryItemTest < ActiveSupport::TestCase
     assert_equal(book.creator_last_name, item['creator_last_name'])
 
   end
-  test "#add_media should not add media that has an isbn of other than 6 (for media without barcode), 9 or 12 digits" do
-    skip
+  #DDB is BookBeep Database (DynamoDB)
+  test "#add_media will not add to DynamoDB unless isbn is already in the DDB or if the title equals items in DDB" do
+    skip # because the controller action create is not implemented yet
+    # First a new item addition to DynamoDB
+    item1 = {
+      'isbn' => 9119275714,
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_last_name' => 'Jansson'
+    }
+    book = LibraryItem.add_media(item1)
+    # Prepare for a second addition, this time with the wrong title
+    item2 = {
+      'isbn' => 9119275714,
+      'title' => 'Sent i oktober',
+      'creator_first_name' => 'Tove',
+      'creator_last_name' => 'Jansson'
+    }
+    # Then set up a query
+    query = {
+      table_name: "LibraryItems",
+      key_condition_expression: "isbn = :isbn",
+      expression_attribute_values: {
+        ":isbn" => item2['isbn']
+      }
+    }
+    # RUN QUERY
+    dynamodb = Aws::DynamoDB::Client.new
+    begin
+      results = dynamodb.query(query)
+
+    rescue  Aws::DynamoDB::Errors::ServiceError => error
+      assert false
+      puts "#add_media test: Unable to query table:"
+      puts "#{error.message}"
+    end
+
+    # Wrap assert around the method to ensure the new item is counted
+    assert_difference("results.count", 0) do
+    # Then run the creation method a second time (new item, new time)
+      response = LibraryItem.add_media(item2)
+      assert_equal(item2, response)
+
+      # This should still only show one item
+      results = dynamodb.query(query)
+      assert_equal(1, results.items.length)
+    end
+
   end
-  test "#add_media should check that a new item of the same isbn as an exsisting item has the same title" do
-    skip
-  end
+  # test "#add_media should not add media that has an isbn of other than 6 (for media without barcode), 9 or 12 digits" do
+  #   skip
+  # end
+  # test "#add_media should check that a new item of the same isbn as an exsisting item has the same title" do
+  #   skip
+  # end
 
 end
