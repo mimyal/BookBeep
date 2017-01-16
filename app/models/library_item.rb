@@ -136,48 +136,6 @@ class LibraryItem
     return @library
   end
 
-  # def self.add_media(info)
-  #   #Create a new client to access DynamoDB
-  #   client = Aws::DynamoDB::Client.new
-  #
-  #   # Prepare params for inserting the instance into db
-  #   # Gives no flexibility to add other data than these two (and they must be present)
-  #   item = {
-  #     'isbn' => info['isbn'].to_i, # primary Partition key
-  #     'title' => info['title'],
-  #     'datetime_created' => Time.now.to_datetime.strftime('%Q').to_i, # primary Sort key
-  #   }
-  #   if !info['creator_first_name'].nil?
-  #     item['creator_first_name'] = info['creator_first_name']
-  #   end
-  #   if !info['creator_surname'].nil?
-  #     item['creator_surname'] = info['creator_surname']
-  #   end
-  #
-  #   params = {
-  #     table_name: "LibraryItems",
-  #     item: item
-  #   }
-  #   # @todo NO TEST FOR THIS YET
-  #   # if @library_item.valid?
-  #
-  #   @library_item = LibraryItem.new(item)
-  #
-  #     # Accessing DynamoDB to add the new item
-  #     begin
-  #       client.put_item(params) # add new item into DynamoDB
-  #     rescue  Aws::DynamoDB::Errors::ServiceError => error
-  #       puts "Unable to add item:"
-  #       puts "#{error.message}"
-  #       flash[:notice] = "Unable to add item:" + "#{error.message}" # don't know if this works
-  #     end
-  #     return @library_item
-  #   # end
-  #   return info
-  # end
-
-  # With an existing instance of LibraryItem it is possible to add the item to DynamoDB
-  # It returns itself if successful, otherwise nil
   def add_media
     #Create a new client to access DynamoDB
     client = Aws::DynamoDB::Client.new

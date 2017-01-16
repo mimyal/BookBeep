@@ -1,11 +1,7 @@
 class LibraryItemsController < ApplicationController
   before_action :dynamodb_setup #, :require_login
-  def index
-    # First validate the search params
-    #ISBN
-    #Title
-    #Last Name
 
+  def index
     # Build query params from search
     if params[:search_key] == 'isbn'
       @info[params[:search_key]] = params[:search_value].to_i
@@ -28,28 +24,29 @@ class LibraryItemsController < ApplicationController
 
     if @library_item.nil?
       flash[:notice] = "This ISBN was not found in Libris"
-      redirect_to main_path
+      redirect_to main_path # what is the difference between render/redirect?
+      return
     end
 
-    # QUERY IF THE ISBN ALREADY EXISTS IN DATABASE - before asking Libris for the other details?
-    results = @library_item.check_copies
-    if !results.empty?
-      results.items.each do |listing|
-        if !listing['title'] == @library_item.title
-          # @todo IN PROGRESS
-          # Don't add to database, render #index with params @library_item.isbn
-          # add form to add new?
-          return
-        end #if
-      end #do
-    end #if
-
-    #SUCCESS
-    # Add to database through model
-    # This will work, but it will query the database an extra time for information we already should have
-    flash[:notice] == "The item was successfully added to Book Beep"
-    redirect_to library_items_path({params[:search_key]: 'isbn', params[:search_value]: @library_item.isbn})
-
+    if @library_item.valid?
+      #SUCCESS
+      @library_item = @library_item.add_media
+      if @library_item.nil?
+        flash[:notice] = "The item could not be added to Book Beep."
+        redirect_to main_path
+        return
+      end
+      flash[:notice] = "The item was successfully added to Book Beep"
+      params[:search_key] = 'isbn'
+      params[:search_value] = @library_item.isbn.to_s
+      redirect_to library_items_path(params) # WEAK PARAMS
+      return
+    else
+      #FAILURE
+      flash[:notice] = "This item is not valid to enter by this method"
+      redirect_to main_path
+      return
+    end
   end
 
 
