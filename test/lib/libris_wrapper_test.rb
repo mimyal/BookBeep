@@ -16,7 +16,7 @@ class LibrisWrapperTest < ActiveSupport::TestCase
     info = {
       'isbn' => 9119275714,
       'title' => 'Sent i november',
-      'creator_last_name' => 'Jansson',
+      'creator_surname' => 'Jansson',
       'creator_first_name' => 'Tove',
       'uri_id' => 'http://libris.kb.se/bib/7156259'
       }
@@ -37,7 +37,7 @@ class LibrisWrapperTest < ActiveSupport::TestCase
     expected_book = LibraryItem.new(info)
 
     assert_equal actual_book.title, expected_book.title
-    assert_nil actual_book.creator_last_name
+    assert_nil actual_book.creator_surname
     # end
   end
 

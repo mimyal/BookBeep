@@ -37,7 +37,7 @@ class LibraryItemsController < ApplicationController
       results.items.each do |listing|
         if !listing['title'] == @library_item.title
           # @todo IN PROGRESS
-          # Don't add to database, render index with params to show @library_item.isbn
+          # Don't add to database, render #index with params @library_item.isbn
           # add form to add new?
           return
         end #if
@@ -63,7 +63,7 @@ class LibraryItemsController < ApplicationController
 
   # def item_params
   #   return params.permit(@info)
-  #   # return params.require(:library_item).permit(:isbn, :datetime_created, :creator_first_name, :creator_last_name, :title)
+  #   # return params.require(:library_item).permit(:isbn, :datetime_created, :creator_first_name, :creator_surname, :title)
   # end
 
   def dynamodb_setup

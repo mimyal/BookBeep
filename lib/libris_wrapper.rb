@@ -30,15 +30,12 @@ class LibrisWrapper
         'isbn' => isbn.to_i,
         # 'datetime_created' => Time.now.to_datetime.strftime('%Q').to_i,
         'title' => title,
-        'creator_last_name' => author_last,
+        'creator_surname' => author_last,
         'creator_first_name' => author_first,
-        'uri_id' => identifier # all BB db items will have a value for this
+        'uri_id' => identifier
       }
       library_item = LibraryItem.new(info)
-      # @todo NOT IMPLEMENTED: Check for valid - test?
-      # if !library_item.valid?
-      #   return nil
-      # end
+
       return library_item
 
     end

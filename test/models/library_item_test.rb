@@ -24,10 +24,10 @@ class LibraryItemTest < ActiveSupport::TestCase
         ],
         global_secondary_indexes: [
         {
-          index_name: "title-index", # required
+          index_name: "title-upcase-index", # required
           key_schema: [ # required
             {
-              attribute_name: "title", # required
+              attribute_name: "title_upcase", # required
               key_type: "HASH", # required, accepts HASH, RANGE
             },
           ],
@@ -40,10 +40,10 @@ class LibraryItemTest < ActiveSupport::TestCase
           },
         },
         {
-          index_name: "last-name-index", # required
+          index_name: "surname-upcase-index", # required
           key_schema: [ # required
             {
-              attribute_name: "creator_last_name", # required
+              attribute_name: "creator_surname_upcase", # required
               key_type: "HASH", # required, accepts HASH, RANGE
             }
           ],
@@ -67,11 +67,11 @@ class LibraryItemTest < ActiveSupport::TestCase
             attribute_type: "N"
           },
           {
-            attribute_name: "title",
+            attribute_name: "title_upcase",
             attribute_type: "S"
           },
           {
-            attribute_name: "creator_last_name",
+            attribute_name: "creator_surname_upcase",
             attribute_type: "S"
           }
 
@@ -140,12 +140,12 @@ class LibraryItemTest < ActiveSupport::TestCase
   end
 
   test "#get_media should return a collection of LibraryItem with correct values" do
-    #First add the new item info
+    #First add the new item info and create new instances of LibraryItem
     info1 = {
       'isbn' => 9119275714,
       'title' => 'Sent i november',
       'creator_first_name' => 'Tove',
-      'creator_last_name' => 'Jansson'
+      'creator_surname' => 'Jansson'
     }
     info2 = {
       'isbn' => 123456789,
@@ -154,14 +154,24 @@ class LibraryItemTest < ActiveSupport::TestCase
     info3 = {
       'isbn' => 987654321,
       'title' => 'Another item again',
-      'creator_last_name' => 'NNN'
+      'creator_surname' => 'NNN'
     }
 
-    # Second run the creation method
-    LibraryItem.add_media(info1) # tests passed
-    LibraryItem.add_media(info1)
-    LibraryItem.add_media(info2)
-    LibraryItem.add_media(info3)
+    # Create a new instance of the item
+    library_item1 = LibraryItem.new(info1)
+    library_item2 = LibraryItem.new(info2)
+    library_item3 = LibraryItem.new(info3)
+
+    # Create two copies of the first book
+    library_item4 = LibraryItem.new(info1)
+
+    # Second run the method to add the instance to DDB
+    library_item1.add_media
+    library_item2.add_media
+    library_item3.add_media
+
+    # Add first item twice
+    library_item4.add_media
 
     # Then call the method to be tested
     #Primary Partition Key query
@@ -172,7 +182,10 @@ class LibraryItemTest < ActiveSupport::TestCase
     if results1isbn == nil || results2isbn == nil || results3isbn == nil
       assert false, 'Partition key query returned nil'
     end
-    assert_equal(results1isbn.count, 2) # added two in that 'drawer'
+
+    # Check that the two copies were both listed in DDB
+    assert_equal(results1isbn.length, 2) # added two in that 'drawer'
+
     # Primary partition key test
     results3isbn.each { |item|
       assert_equal(987654321, item.isbn)
@@ -190,13 +203,13 @@ class LibraryItemTest < ActiveSupport::TestCase
     }
 
     # GSI query
-    results1title = LibraryItem.get_media({'title' => 'Sent i november'}) # Should return collection of two
-    results3surname = LibraryItem.get_media({'creator_last_name' => 'NNN'})
+    results1title = LibraryItem.get_media({'title' => info1['title']}) # Should return collection of two
+    results3surname = LibraryItem.get_media({'creator_surname' => info3['title']})
     # Method only works if it does not return nil for any of these requests
     if results1title == nil || results3surname == nil
       assert false, 'GSI query returned nil'
     end
-    assert_equal(results1title.count, 2) # added two in that 'drawer'
+    assert_equal(results1title.length, 2) # added two in that 'drawer'
 
     # GSI Queries test
     results1title.each { |item|
@@ -207,20 +220,23 @@ class LibraryItemTest < ActiveSupport::TestCase
     results3surname.each { |item|
       assert_equal(item.isbn, 987654321)
       assert_equal(item.title, 'Another item again')
-      assert_equal(item.creator_last_name, 'NNN')
+      assert_equal(item.creator_surname, 'NNN')
       assert_instance_of(LibraryItem, item)
     }
   end
+
   test "#add_media should add item to DynamoDB" do
     # First the new item info
     item = {
       'isbn' => 9119275714,
       'title' => 'Sent i november',
       'creator_first_name' => 'Tove',
-      'creator_last_name' => 'Jansson'
+      'creator_surname' => 'Jansson'
     }
-    # Then run the creation method
-    LibraryItem.add_media(item)
+    # Create a new instance of the item
+    library_item = LibraryItem.new(item)
+    # Then run the method to add the instance to DDB
+    library_item.add_media # returns itself, or nil, if not added?
 
     # Then set up a query
     query = {
@@ -247,14 +263,18 @@ class LibraryItemTest < ActiveSupport::TestCase
       puts "#{error.message}"
     end
   end #test
+
   test "#add_media a new item should increase DynamoDB table by one" do
     # First the new item info
     item = {
       'isbn' => 9119275714,
       'title' => 'Sent i november'
     }
-    # Then run the creation method
-    LibraryItem.add_media(item)
+    # Create a new instance of the item
+    library_item = LibraryItem.new(item)
+
+    # Then run the method to add the instance to DDB
+    library_item.add_media # returns itself, or nil, if not added?
 
     # Then set up a query
     query = {
@@ -269,21 +289,34 @@ class LibraryItemTest < ActiveSupport::TestCase
     begin
       results = dynamodb.query(query)
     rescue  Aws::DynamoDB::Errors::ServiceError => error
-      assert false
       puts "#add_media test: Unable to query table:"
       puts "#{error.message}"
+      assert false
     end
 
     # Wrap assert around the method to ensure the new item is counted
     assert_difference("results.count", 1) do
-    # Then run the creation method a second time (new item, new time)
-      LibraryItem.add_media(item)
-      results = dynamodb.query(query)
+      # Then run the creation method a second time (new item, new time)
+      library_item2 = LibraryItem.new(item)
+
+      # Then run the method to add the instance to DDB
+      library_item2.add_media
+
+      # Run the query again
+      begin
+        results = dynamodb.query(query)
+      rescue  Aws::DynamoDB::Errors::ServiceError => error
+        puts "#add_media test: Unable to query table:"
+        puts "#{error.message}"
+        assert false
+      end
+
+      # This time of length two
       assert_equal(2, results.items.length)
       results.items.each { |listing| # This isbn is used two times for two items
         assert(listing['isbn'], item['isbn'])
       }
-    end
+    end # count difference
   end # test
 
   test "#add_media should return an instance of LibraryItem with the correct values" do
@@ -292,72 +325,24 @@ class LibraryItemTest < ActiveSupport::TestCase
       'isbn' => 9119275714,
       'title' => 'Sent i november',
       'creator_first_name' => 'Tove',
-      'creator_last_name' => 'Jansson'
+      'creator_surname' => 'Jansson'
     }
-    # Then run the creation method
-    book = LibraryItem.add_media(item)
+    # Create a new instance of the item
+    library_item = LibraryItem.new(item)
+    # Then run the method to add the instance to DDB
+    book = library_item.add_media # returns itself, or nil, if not added?
+
     assert_instance_of(LibraryItem, book)
 
     assert_equal(book.isbn, item['isbn'])
     assert_equal(book.title, item['title'])
     assert_equal(book.creator_first_name, item['creator_first_name'])
-    assert_equal(book.creator_last_name, item['creator_last_name'])
+    assert_equal(book.creator_surname, item['creator_surname'])
 
   end
-  #DDB is BookBeep Database (DynamoDB)
-  test "#add_media will not add to DynamoDB unless isbn is already in the DDB or if the title equals items in DDB" do
-    skip # because the controller action create is not implemented yet
-    # First a new item addition to DynamoDB
-    item1 = {
-      'isbn' => 9119275714,
-      'title' => 'Sent i november',
-      'creator_first_name' => 'Tove',
-      'creator_last_name' => 'Jansson'
-    }
-    book = LibraryItem.add_media(item1)
-    # Prepare for a second addition, this time with the wrong title
-    item2 = {
-      'isbn' => 9119275714,
-      'title' => 'Sent i oktober',
-      'creator_first_name' => 'Tove',
-      'creator_last_name' => 'Jansson'
-    }
-    # Then set up a query
-    query = {
-      table_name: "LibraryItems",
-      key_condition_expression: "isbn = :isbn",
-      expression_attribute_values: {
-        ":isbn" => item2['isbn']
-      }
-    }
-    # RUN QUERY
-    dynamodb = Aws::DynamoDB::Client.new
-    begin
-      results = dynamodb.query(query)
 
-    rescue  Aws::DynamoDB::Errors::ServiceError => error
-      assert false
-      puts "#add_media test: Unable to query table:"
-      puts "#{error.message}"
-    end
-
-    # Wrap assert around the method to ensure the new item is counted
-    assert_difference("results.count", 0) do
-    # Then run the creation method a second time (new item, new time)
-      response = LibraryItem.add_media(item2)
-      assert_equal(item2, response)
-
-      # This should still only show one item
-      results = dynamodb.query(query)
-      assert_equal(1, results.items.length)
-    end
-
+  test "#add_media should return nil if the instance was invalid" do
+    skip
   end
-  # test "#add_media should not add media that has an isbn of other than 6 (for media without barcode), 9 or 12 digits" do
-  #   skip
-  # end
-  # test "#add_media should check that a new item of the same isbn as an exsisting item has the same title" do
-  #   skip
-  # end
 
 end

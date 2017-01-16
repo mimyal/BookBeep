@@ -8,16 +8,13 @@ class LibraryItem
   validates :datetime_created, presence: true # Primary Sort Key
   validates :title, presence: true # Global Secondary Index
 
-  attr_accessor :isbn, :datetime_created, :title, :creator_last_name, :creator_first_name
+  attr_accessor :isbn, :datetime_created, :title, :creator_surname, :creator_first_name
 
   def initialize(info)
-    # CHECK that if the ISBN is already in the BB database, the title matches the existing record before creation
-
-
     @isbn = info['isbn']
     @datetime_created = info['datetime_created']
-    @title = info['title'] # Title required on creation (add validations)
-    @creator_last_name = info['creator_last_name']
+    @title = info['title']
+    @creator_surname = info['creator_surname']
     @creator_first_name = info['creator_first_name']
     @uri_id = info['uri_id']
   end
@@ -87,28 +84,29 @@ class LibraryItem
       if info['title'] != nil
         params = {
           table_name: table_name,
-          index_name: 'title-index',
+          index_name: 'title-upcase-index',
           select: 'ALL_PROJECTED_ATTRIBUTES',
-          key_condition_expression: 'title = :title',
+          key_condition_expression: 'title_upcase = :title_upcase',
           expression_attribute_values: {
-            ':title' => info['title']
+            ':title_upcase' => info['title'].upcase # UPCASE
           }
         }
       end
-      # Fifth search for GSI creator_last_name
-      if info['creator_last_name'] != nil
+      # Fifth search for GSI creator_surname
+      if info['creator_surname'] != nil
         params = {
           table_name: table_name,
-          index_name: 'last-name-index',
+          index_name: 'surname-upcase-index',
           select: 'ALL_PROJECTED_ATTRIBUTES',
-          key_condition_expression: 'creator_last_name = :creator_last_name',
+          key_condition_expression: 'creator_surname_upcase = :creator_surname_upcase',
           expression_attribute_values: {
-            ':creator_last_name' => info['creator_last_name']
+            ':creator_surname_upcase' => info['creator_surname'].upcase # UPCASE
           }
         }
       end
       # Check that params is not empty
       if params.empty?
+        puts "PARAMS EMPTY for #{info}"
         return @library # = [] # data.items = [] if nothing was found
       end
       # STEP 2: RUN QUERY
@@ -117,6 +115,7 @@ class LibraryItem
         data = client.query(params)
         # puts "Method get_media query succeeded."
         if data.items.empty?
+          puts "DATA>ITEMS EMPTY for #{info}"
           return @library # = [] # data.items = [] if nothing was found
         end
         data.items.each { |listing|
@@ -124,7 +123,7 @@ class LibraryItem
           info['datetime_created'] = listing['datetime_created']
           info['title'] = listing['title']
           info['creator_first_name'] = listing['creator_first_name']
-          info['creator_last_name'] = listing['creator_last_name']
+          info['creator_surname'] = listing['creator_surname']
           @library << LibraryItem.new(info)
         }
       rescue  Aws::DynamoDB::Errors::ServiceError => error
@@ -137,62 +136,64 @@ class LibraryItem
     return @library
   end
 
-  def self.add_media(info)
-    #Create a new client to access DynamoDB
-    client = Aws::DynamoDB::Client.new
+  # def self.add_media(info)
+  #   #Create a new client to access DynamoDB
+  #   client = Aws::DynamoDB::Client.new
+  #
+  #   # Prepare params for inserting the instance into db
+  #   # Gives no flexibility to add other data than these two (and they must be present)
+  #   item = {
+  #     'isbn' => info['isbn'].to_i, # primary Partition key
+  #     'title' => info['title'],
+  #     'datetime_created' => Time.now.to_datetime.strftime('%Q').to_i, # primary Sort key
+  #   }
+  #   if !info['creator_first_name'].nil?
+  #     item['creator_first_name'] = info['creator_first_name']
+  #   end
+  #   if !info['creator_surname'].nil?
+  #     item['creator_surname'] = info['creator_surname']
+  #   end
+  #
+  #   params = {
+  #     table_name: "LibraryItems",
+  #     item: item
+  #   }
+  #   # @todo NO TEST FOR THIS YET
+  #   # if @library_item.valid?
+  #
+  #   @library_item = LibraryItem.new(item)
+  #
+  #     # Accessing DynamoDB to add the new item
+  #     begin
+  #       client.put_item(params) # add new item into DynamoDB
+  #     rescue  Aws::DynamoDB::Errors::ServiceError => error
+  #       puts "Unable to add item:"
+  #       puts "#{error.message}"
+  #       flash[:notice] = "Unable to add item:" + "#{error.message}" # don't know if this works
+  #     end
+  #     return @library_item
+  #   # end
+  #   return info
+  # end
 
-    # Prepare params for inserting the instance into db
-    # Gives no flexibility to add other data than these two (and they must be present)
-    item = {
-      'isbn' => info['isbn'].to_i, # primary Partition key
-      'title' => info['title'],
-      'datetime_created' => Time.now.to_datetime.strftime('%Q').to_i, # primary Sort key
-    }
-    if !info['creator_first_name'].nil?
-      item['creator_first_name'] = info['creator_first_name']
-    end
-    if !info['creator_last_name'].nil?
-      item['creator_last_name'] = info['creator_last_name']
-    end
-
-    params = {
-      table_name: "LibraryItems",
-      item: item
-    }
-    # @todo NO TEST FOR THIS YET
-    # if @library_item.valid?
-
-    @library_item = LibraryItem.new(item)
-
-      # Accessing DynamoDB to add the new item
-      begin
-        client.put_item(params) # add new item into DynamoDB
-      rescue  Aws::DynamoDB::Errors::ServiceError => error
-        puts "Unable to add item:"
-        puts "#{error.message}"
-        flash[:notice] = "Unable to add item:" + "#{error.message}" # don't know if this works
-      end
-      return @library_item
-    # end
-    return info
-  end
-
+  # With an existing instance of LibraryItem it is possible to add the item to DynamoDB
   def add_media
     #Create a new client to access DynamoDB
     client = Aws::DynamoDB::Client.new
 
     # Prepare params for inserting the instance into db
-    # Gives no flexibility to add other data than these two (and they must be present)
     item = {
       'isbn' => @isbn.to_i, # primary Partition key
       'title' => @title,
+      'title_upcase' => @title.upcase,
       'datetime_created' => Time.now.to_datetime.strftime('%Q').to_i, # primary Sort key
     }
     if !@creator_first_name.nil?
       item['creator_first_name'] = @creator_first_name
     end
-    if !@creator_last_name.nil?
-      item['creator_last_name'] = @creator_last_name
+    if !@creator_surname.nil?
+      item['creator_surname'] = @creator_surname
+      item['creator_surname_upcase'] = @creator_surname.upcase
     end
 
     params = {
@@ -203,20 +204,16 @@ class LibraryItem
     # @todo NO TEST FOR THIS YET
     # if @library_item.valid?
 
-    # Might not be the done thing, instead change what needs to be changed?
-    @library_item = LibraryItem.new(item)
-
       # Accessing DynamoDB to add the new item
       begin
         client.put_item(params) # add new item into DynamoDB
       rescue  Aws::DynamoDB::Errors::ServiceError => error
         puts "Unable to add item:"
         puts "#{error.message}"
-        flash[:notice] = "Unable to add item:" + "#{error.message}" # don't know if this works
       end
-      return @library_item
+      return self # if added to DDB
     # end
-    return info
+    return nil # if not added
   end
 
 # @todo test test
