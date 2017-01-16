@@ -5,7 +5,7 @@ class LibraryItem
   # include Aws::Record
 
   validates :isbn, presence: true #, length: { is: (9 || 12) } # Primary Partition Key (Libris seem to have some unexpected length ISBNs)
-  validates :datetime_created, presence: true # Primary Sort Key
+  # validates :datetime_created, presence: true # Primary Sort Key
   validates :title, presence: true # Global Secondary Index
 
   attr_accessor :isbn, :datetime_created, :title, :creator_surname, :creator_first_name
@@ -106,7 +106,7 @@ class LibraryItem
       end
       # Check that params is not empty
       if params.empty?
-        puts "PARAMS EMPTY for #{info}"
+        # puts "PARAMS EMPTY for #{info}"
         return @library # = [] # data.items = [] if nothing was found
       end
       # STEP 2: RUN QUERY
@@ -115,7 +115,7 @@ class LibraryItem
         data = client.query(params)
         # puts "Method get_media query succeeded."
         if data.items.empty?
-          puts "DATA>ITEMS EMPTY for #{info}"
+          # puts "DATA>ITEMS EMPTY for #{info}"
           return @library # = [] # data.items = [] if nothing was found
         end
         data.items.each { |listing|
@@ -177,9 +177,15 @@ class LibraryItem
   # end
 
   # With an existing instance of LibraryItem it is possible to add the item to DynamoDB
+  # It returns itself if successful, otherwise nil
   def add_media
     #Create a new client to access DynamoDB
     client = Aws::DynamoDB::Client.new
+
+    # Ensure valid item
+    if @isbn == nil || @title == nil
+      return nil
+    end
 
     # Prepare params for inserting the instance into db
     item = {
@@ -201,19 +207,15 @@ class LibraryItem
       item: item
     }
 
-    # @todo NO TEST FOR THIS YET
-    # if @library_item.valid?
-
       # Accessing DynamoDB to add the new item
       begin
         client.put_item(params) # add new item into DynamoDB
+        return self
       rescue  Aws::DynamoDB::Errors::ServiceError => error
         puts "Unable to add item:"
         puts "#{error.message}"
+        return nil
       end
-      return self # if added to DDB
-    # end
-    return nil # if not added
   end
 
 # @todo test test

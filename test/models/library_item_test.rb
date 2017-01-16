@@ -341,8 +341,101 @@ class LibraryItemTest < ActiveSupport::TestCase
 
   end
 
-  test "#add_media should return nil if the instance was invalid" do
-    skip
+  test "instance invalid if isbn or title are missing" do
+    # ISBN First the new item info
+    item1 = {
+      'isbn' => 9119275714,
+      'creator_first_name' => 'Tove',
+      'creator_surname' => 'Jansson'
+    }
+    # Create a new instance of the item
+    library_item1 = LibraryItem.new(item1)
+    assert_not library_item1.valid? # false
+
+    # TITLE First the new item info
+    item2 = {
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_surname' => 'Jansson'
+    }
+    # Create a new instance of the item
+    library_item2 = LibraryItem.new(item2)
+    assert_not library_item2.valid? # false
+
   end
+
+  test "#add_media will not add invalid LibraryItem instances to DDB" do
+    # ISBN First the new item info
+    item1 = {
+      'isbn' => 9119275714,
+      'creator_first_name' => 'Tove',
+      'creator_surname' => 'Jansson'
+    }
+    # Create a new instance of the item, it is invalid (tested earlier)
+    library_item1 = LibraryItem.new(item1)
+
+    #Add it to DynamoDB using the method
+    library_item1.add_media
+
+    #Query item to check if it was added
+    #Set up query
+    query = {
+      table_name: "LibraryItems",
+      key_condition_expression: "isbn = :isbn",
+      expression_attribute_values: {
+        ":isbn" => item1['isbn']
+      }
+    }
+    # RUN QUERY
+    dynamodb = Aws::DynamoDB::Client.new
+    begin
+      results = dynamodb.query(query)
+      assert_equal(results.items.empty?, true)
+    rescue  Aws::DynamoDB::Errors::ServiceError => error
+      puts "#add_media test: Unable to query table:"
+      puts "#{error.message}"
+      assert false, "Unable to query table for #{item1['isbn']}"
+    end
+
+
+    # TITLE First the new item info
+    item2 = {
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_surname' => 'Jansson'
+    }
+    # Create a new instance of the item, it is invalid (tested earlier)
+    library_item2 = LibraryItem.new(item2)
+
+    #Add it to DynamoDB using the method
+    library_item2.add_media
+
+    #Query item to check if it was added
+    #Set up query params
+    params = {
+      table_name: 'LibraryItems',
+      index_name: 'title-upcase-index',
+      select: 'ALL_PROJECTED_ATTRIBUTES',
+      key_condition_expression: 'title_upcase = :title_upcase',
+      expression_attribute_values: {
+        ':title_upcase' => item2['title'].upcase
+      }
+    }
+
+    # RUN QUERY
+    begin
+      response = dynamodb.query(params)
+      # puts "GSI Query suceessful"
+      # items != [] ? (puts items) : (puts "No items were found")
+      assert response.items.empty?
+    rescue  Aws::DynamoDB::Errors::ServiceError => error
+      puts "Unable to query table:"
+      puts "#{error.message}"
+      assert false, "Unable to query table for #{item['title']}"
+    end
+
+  end #test
+
+
 
 end
