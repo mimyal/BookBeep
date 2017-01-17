@@ -42,7 +42,7 @@
         <td>
         </td>
         <td>
-          <%= link_to "Delete", root_path, method: :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>
+          <%= link_to "Delete", destroy_library_item_path(item: {'isbn' => listing.isbn, 'datetime_created' => listing.datetime_created}), method: :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>
         </td>
         <td>
         </td>

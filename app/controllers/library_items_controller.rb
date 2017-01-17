@@ -2,6 +2,8 @@ class LibraryItemsController < ApplicationController
   before_action :dynamodb_setup #, :require_login
 
   def index
+    @item = {}
+
     # Build query params from search
     if params[:search_key] == 'isbn'
       @info[params[:search_key]] = params[:search_value].to_i
@@ -36,7 +38,7 @@ class LibraryItemsController < ApplicationController
         redirect_to main_path
         return
       end
-      flash[:notice] = "The item was successfully added to Book Beep"
+      flash[:notice] = "BEEP! The item was successfully added to Book Beep"
       params[:search_key] = 'isbn'
       params[:search_value] = @library_item.isbn.to_s
       redirect_to library_items_path(params) # WEAK PARAMS
@@ -49,6 +51,14 @@ class LibraryItemsController < ApplicationController
     end
   end
 
+  def destroy
+    raise
+    #PARAMS FOR ONE ITEM SEARCH - COMPLETE PRIMARY KEY NEEDED
+    # @info['isbn']
+    # @info['datetime_created']
+    @library_item = @library_item.get_media(@info)[0]
+    redirect_to library_items_path(params) #WEAK PARAMS
+  end
 
 
 
