@@ -22,3 +22,8 @@ test/cassettes/
 
 # Secrets should be ignored
 .env
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
