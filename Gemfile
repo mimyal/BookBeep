@@ -20,7 +20,7 @@ gem 'aws-record', '~> 1.0'
 # # Use Puma as the app server
 gem 'puma', '~> 3.0'
 
-gem 'sqlite3'
+# gem 'sqlite3'
 # gem 'rails', '4.1.8'
 
 
