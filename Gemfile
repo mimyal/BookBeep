@@ -15,10 +15,13 @@ gem 'aws-record', '~> 1.0'
 # # Might be replaced by aws-record?
 # gem 'dynamoid', '~> 1'
 
-# # Elastic Beanstalk wants this too
-# # Use Puma as the app server
-# gem 'puma', '~> 3.0'
 
+# Elastic Beanstalk requires the following three gems
+# # Use Puma as the app server
+gem 'puma', '~> 3.0'
+
+gem 'sqlite3'
+# gem 'rails', '4.1.8'
 
 
 
