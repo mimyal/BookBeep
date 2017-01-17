@@ -6,7 +6,7 @@
 <%end%>
 
 <section class="medium-10 large-10 column">
-  <h2>Search results for <%= "#{params[:search_key].upcase}: #{params[:search_value]}" %></h2>
+  <h2>Search results for <%= "#{params[:search_key].mb_chars.upcase.to_s}: #{params[:search_value]}" %></h2>
   <table>
     <thead>
       <tr>

@@ -122,6 +122,7 @@ class LibraryItemTest < ActiveSupport::TestCase
      actual_book = LibraryItem.libris_search(isbn)
      assert_equal LibraryItem, actual_book.class
      assert_equal('Sent i november', actual_book.title)
+     assert actual_book.valid?
   end
 
   test "#libris_search should return nil for an unknown isbn" do
@@ -139,7 +140,7 @@ class LibraryItemTest < ActiveSupport::TestCase
     assert_equal(book_collection, [])
   end
 
-  test "#get_media should return a collection of LibraryItem with correct values" do
+  test "#get_media should return a collection of LibraryItem with correct values for isbn search" do
     #First add the new item info and create new instances of LibraryItem
     info1 = {
       'isbn' => 9119275714,
@@ -178,13 +179,15 @@ class LibraryItemTest < ActiveSupport::TestCase
     results1isbn = LibraryItem.get_media({'isbn' => 9119275714}) # Should return collection of two
     results2isbn = LibraryItem.get_media({'isbn' => 123456789})
     results3isbn = LibraryItem.get_media({'isbn' => 987654321})
-    # Method only works if it does not return nil for any of these requests
-    if results1isbn == nil || results2isbn == nil || results3isbn == nil
-      assert false, 'Partition key query returned nil'
+    # Method only works if it does not return an empty array for any of these requests
+    if results1isbn.empty? || results2isbn.empty? || results3isbn.empty?
+      assert false, 'Partition key query returned no results'
     end
 
     # Check that the two copies were both listed in DDB
     assert_equal(results1isbn.length, 2) # added two in that 'drawer'
+    assert_equal(results2isbn.length, 1)
+    assert_equal(results3isbn.length, 1)
 
     # Primary partition key test
     results3isbn.each { |item|
@@ -201,15 +204,44 @@ class LibraryItemTest < ActiveSupport::TestCase
       assert_equal(item.isbn, 123456789)
       assert_equal(item.title, 'Another item')
     }
+  end
 
+  test "#get_media should return the correct collection of items for GSI searches: title and last names" do
+    #First add the new item info and create new instances of LibraryItem
+    info1 = {
+      'isbn' => 9119275714,
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_surname' => 'Jansson'
+    }
+    info2 = {
+      'isbn' => 123456789,
+      'title' => 'Another item'
+    }
+    info3 = {
+      'isbn' => 987654321,
+      'title' => 'Another item again',
+      'creator_surname' => 'NNN'
+    }
+
+    # Create a new instance of the item
+    library_item1 = LibraryItem.new(info1)
+    library_item2 = LibraryItem.new(info2)
+    library_item3 = LibraryItem.new(info3)
+
+    # Second run the method to add the instance to DDB
+    library_item1.add_media
+    library_item2.add_media
+    library_item3.add_media
+
+    # Then call the method to be tested
     # GSI query
-    results1title = LibraryItem.get_media({'title' => info1['title']}) # Should return collection of two
-    results3surname = LibraryItem.get_media({'creator_surname' => info3['title']})
+    results1title = LibraryItem.get_media({'title' => info1['title']})
+    results3surname = LibraryItem.get_media({'creator_surname' => info3['creator_surname']})
     # Method only works if it does not return nil for any of these requests
-    if results1title == nil || results3surname == nil
-      assert false, 'GSI query returned nil'
+    if results1title.empty? || results3surname.empty?
+      assert false, 'GSI query returned no results'
     end
-    assert_equal(results1title.length, 2) # added two in that 'drawer'
 
     # GSI Queries test
     results1title.each { |item|
@@ -221,6 +253,87 @@ class LibraryItemTest < ActiveSupport::TestCase
       assert_equal(item.isbn, 987654321)
       assert_equal(item.title, 'Another item again')
       assert_equal(item.creator_surname, 'NNN')
+      assert_instance_of(LibraryItem, item)
+    }
+  end
+
+  test "#get_media should handle search in titles and surnames for Swedish letters å ä ö and Å Ä Ö" do
+    info1 = { # completely made up
+      'isbn' => 300000000,
+      'title' => 'Å över ängen, Änglar å Övriga',
+      'creator_surname' => 'Båtman-Åkeson'
+    }
+    info2 = { #existing title, invented creator
+      'isbn' => 9129664632,
+      'title' => 'Zigge med zäta',
+      'creator_surname' => "Märta'Ärtanainen"
+    }
+    info3 = { #existing title, invented creator
+      'isbn' => 9163837676,
+      'title' => 'Öppet hav',
+      'creator_surname' => 'Nordlöv/Östling'
+    }
+    # Create a new instance of the item
+    library_item1 = LibraryItem.new(info1)
+    library_item2 = LibraryItem.new(info2)
+    library_item3 = LibraryItem.new(info3)
+    # Second run the method to add the instance to DDB
+    library_item1.add_media
+    library_item2.add_media
+    library_item3.add_media
+
+    # Then call the method to be tested
+    results1Atitle = LibraryItem.get_media({'title' => 'å över ängen, änglar å övriga'})
+    results1Btitle = LibraryItem.get_media({'title' => 'Å ÖVER ÄNGEN, ÄNGLAR Å ÖVRIGA'})
+    results2title = LibraryItem.get_media({'title' => 'ZIGGE MED ZÄTA'})
+    results3title = LibraryItem.get_media({'title' => 'öppet hav'})
+
+    results1surname = LibraryItem.get_media({'creator_surname' => 'båtman-åkeson'})
+    results2surname = LibraryItem.get_media({'creator_surname' => "märta'ärtanainen"})
+    results3surname = LibraryItem.get_media({'creator_surname' => 'nordlöv/östling'})
+
+    # Assert the item info can be found
+    # Method only works if it does not return an empty array for any of these requests
+    if results1Atitle.empty? || results1Btitle.empty? || results2title.empty? || results3title.empty?
+      assert false, 'GSI query title returned no results'
+    end
+    if results1surname.empty? || results2surname.empty? || results3surname.empty?
+      assert false, 'GSI query surname returned no results'
+    end
+    # Watch out for .each in tests, they dont assert well if empty (always check .length or .empty?)
+    results1Atitle.each { |item|
+      assert_equal(item.isbn, 300000000)
+      assert_equal(item.title, 'Å över ängen, Änglar å Övriga')
+      assert_instance_of(LibraryItem, item)
+    }
+    results1Btitle.each { |item|
+      assert_equal(item.isbn, 300000000)
+      assert_equal(item.title, 'Å över ängen, Änglar å Övriga')
+      assert_instance_of(LibraryItem, item)
+    }
+    results2title.each { |item|
+      assert_equal(item.isbn, 9129664632)
+      assert_equal(item.title, 'Zigge med zäta')
+      assert_instance_of(LibraryItem, item)
+    }
+    results3title.each { |item|
+      assert_equal(item.isbn, 9163837676)
+      assert_equal(item.title, 'Öppet hav')
+      assert_instance_of(LibraryItem, item)
+    }
+    results1surname.each { |item|
+      assert_equal(item.isbn, 300000000)
+      assert_equal(item.creator_surname, 'Båtman-Åkeson')
+      assert_instance_of(LibraryItem, item)
+    }
+    results2surname.each { |item|
+      assert_equal(item.isbn, 9129664632)
+      assert_equal(item.creator_surname, "Märta'Ärtanainen")
+      assert_instance_of(LibraryItem, item)
+    }
+    results3surname.each { |item|
+      assert_equal(item.isbn, 9163837676)
+      assert_equal(item.creator_surname, 'Nordlöv/Östling')
       assert_instance_of(LibraryItem, item)
     }
   end
@@ -329,6 +442,7 @@ class LibraryItemTest < ActiveSupport::TestCase
     }
     # Create a new instance of the item
     library_item = LibraryItem.new(item)
+    assert library_item.valid?
     # Then run the method to add the instance to DDB
     book = library_item.add_media # returns itself, or nil, if not added?
 
@@ -418,7 +532,7 @@ class LibraryItemTest < ActiveSupport::TestCase
       select: 'ALL_PROJECTED_ATTRIBUTES',
       key_condition_expression: 'title_upcase = :title_upcase',
       expression_attribute_values: {
-        ':title_upcase' => item2['title'].upcase
+        ':title_upcase' => item2['title'].mb_chars.upcase.to_s
       }
     }
 

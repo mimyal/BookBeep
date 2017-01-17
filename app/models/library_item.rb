@@ -26,16 +26,6 @@ class LibraryItem
     return @library_item
   end
 
-  # To list all items in BookBeep DynamoDB
-  def self.all
-    # NOT TESTED
-    # client = Aws::DynamoDB::Client.new
-    # table_name = "LibraryItems"
-    # response = client.scan(table_name: table_name)
-    # library =  response.items
-    # # next put these into a collection of LibraryItem /s
-  end
-
   # Method that will return a collection of library items depending on isbn, title or last name (partition key, GSIs)
   def self.get_media(info)
     client = Aws::DynamoDB::Client.new
@@ -88,9 +78,10 @@ class LibraryItem
           select: 'ALL_PROJECTED_ATTRIBUTES',
           key_condition_expression: 'title_upcase = :title_upcase',
           expression_attribute_values: {
-            ':title_upcase' => info['title'].upcase # UPCASE
+            ':title_upcase' => info['title'].mb_chars.upcase.to_s # UPCASE
           }
         }
+        # puts "HERE HERE #{info['title']}"
       end
       # Fifth search for GSI creator_surname
       if info['creator_surname'] != nil
@@ -100,7 +91,7 @@ class LibraryItem
           select: 'ALL_PROJECTED_ATTRIBUTES',
           key_condition_expression: 'creator_surname_upcase = :creator_surname_upcase',
           expression_attribute_values: {
-            ':creator_surname_upcase' => info['creator_surname'].upcase # UPCASE
+            ':creator_surname_upcase' => info['creator_surname'].mb_chars.upcase.to_s # UPCASE
           }
         }
       end
@@ -149,7 +140,7 @@ class LibraryItem
     item = {
       'isbn' => @isbn.to_i, # primary Partition key
       'title' => @title,
-      'title_upcase' => @title.upcase,
+      'title_upcase' => @title.mb_chars.upcase.to_s,
       'datetime_created' => Time.now.to_datetime.strftime('%Q').to_i, # primary Sort key
     }
     if !@creator_first_name.nil?
@@ -157,7 +148,7 @@ class LibraryItem
     end
     if !@creator_surname.nil?
       item['creator_surname'] = @creator_surname
-      item['creator_surname_upcase'] = @creator_surname.upcase
+      item['creator_surname_upcase'] = @creator_surname.mb_chars.upcase.to_s
     end
 
     params = {
