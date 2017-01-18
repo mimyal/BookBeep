@@ -8,31 +8,30 @@
   <h1>Book Beep</h1>
 
   <main>
-  <!-- ERROR HANDLING HERE? -->
-  <%if flash[:notice]%>
-  <h3 id="notice"><%= flash[:notice] %></h3>
-  <%end%>
+    <!-- ERROR HANDLING HERE? -->
+    <%if flash[:notice]%>
+    <h3 id="notice"><%= flash[:notice] %></h3>
+    <%end%>
 
-<!-- PATH TO NEW ITEMS -->
-    <div class="", id="libris-search-form">
+    <!-- PATH TO NEW ITEMS -->
+    <section class="", id="libris-search-form">
       <h2>Add new items through Libris</h2>
       <%= form_tag(create_library_item_path, :method => "post") do %>
-        <%= text_field_tag :isbn, params[:isbn], placeholder: "Search for #{params[:isbn]}" %>
-        <%= submit_tag "Add New Item", :name => nil  %>
+      <%= text_field_tag :isbn, params[:isbn], placeholder: "Search for #{params[:isbn]}" %>
+      <%= submit_tag "Add New Item", :name => nil  %>
       <% end %>
-    </div>
-
-<!-- PATH TO VIEW ITEMS -->
-    <div class="", id="db-search-form">
+    </section>
+    <!-- PATH TO VIEW ITEMS -->
+    <section class="", id="db-search-form">
       <h2>Search for items in the Book Beep database</h2>
       <%if flash[:notice]%>
       <%end%>
       <%= form_tag(library_items_path, :method => "get") do %>
-        <%= select_tag(:search_key, options_for_select([['ISBN', :isbn], ['Title', :title], ['Last Name', :creator_surname]], :isbn))%>
-        <%= text_field_tag :search_value, params[:search_value], placeholder: "Search for #{params[:search_value]}" %>
-        <%= submit_tag "Search", :name => nil  %>
+      <%= select_tag(:search_key, options_for_select([['ISBN', :isbn], ['Title', :title], ['Last Name', :creator_surname]], :isbn))%>
+      <%= text_field_tag :search_value, params[:search_value], placeholder: "Search for #{params[:search_value]}" %>
+      <%= submit_tag "Search", :name => nil  %>
       <% end %>
-    </div>
+    </section>
 
 
   </main>
@@ -40,7 +39,8 @@
 
   <!-- Button to list all media items -->
   <!-- NOT IMPLEMENTED -->
-  <%= link_to "List catalogue", library_items_path %>
+  <%= link_to "List catalogue", library_items_path, :method => 'get' %>
+
   <!-- List ten most popular media items -->
   <h2>- där ditt bibliotek sparas på molnet</h2>
 

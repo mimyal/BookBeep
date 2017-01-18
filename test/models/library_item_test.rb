@@ -131,6 +131,46 @@ class LibraryItemTest < ActiveSupport::TestCase
     assert_nil response
   end
 
+  test "#all should scan the library and return all items from the database" do
+    #First add the new item info and create new instances of LibraryItem
+    info1 = {
+      'isbn' => 9119275714,
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_surname' => 'Jansson'
+    }
+    info2 = {
+      'isbn' => 123456789,
+      'title' => 'Another item'
+    }
+
+    # Create a new instance of the item
+    library_item1 = LibraryItem.new(info1)
+    library_item2 = LibraryItem.new(info2)
+
+    # Create two copies of the first book, not needed but for clarity
+    library_item4 = LibraryItem.new(info1)
+
+    # SCAN AND ASSERT AFTER EACH ADD
+    # Run the method to add the instance to DDB
+    library_item1.add_media
+
+    # should return a collection of one
+    library = LibraryItem.all
+    assert_equal 1, library.length
+    assert_equal 'Sent i november', library[0]['title']
+
+    library_item2.add_media
+    library = LibraryItem.all
+    assert_equal 2, library.length
+
+    # Add first item twice
+    library_item4.add_media
+    library = LibraryItem.all
+    assert_equal 3, library.length
+
+  end
+
   test "#get_media Getting a non-existing item from the database should return nil" do
     isbn = 111111111 # Partition key
     book_collection = LibraryItem.get_media({'isbn' => isbn})
@@ -171,7 +211,7 @@ class LibraryItemTest < ActiveSupport::TestCase
     library_item2.add_media
     library_item3.add_media
 
-    # Add first item twice
+    # Add first item twice, not needed but for clarity
     library_item4.add_media
 
     # Then call the method to be tested
@@ -336,6 +376,49 @@ class LibraryItemTest < ActiveSupport::TestCase
       assert_equal(item.creator_surname, 'Nordlöv/Östling')
       assert_instance_of(LibraryItem, item)
     }
+  end
+
+  test "#get_media should return a specific item from DynamoDB if both isbn and datetime_created is provided (array of one)" do
+    # First the new item info
+    item = {
+      'isbn' => 9119275714,
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_surname' => 'Jansson'
+    }
+    # Create a new instance of the item
+    library_item = LibraryItem.new(item)
+    # Add it to DynamoDB
+    library_item.add_media
+
+    # Get the item to set up the testing query at the end
+    # It is the only item in the db at this time so pick [0]
+    actual_book = LibraryItem.get_media({'isbn' => 9119275714})[0]
+    # assert_instance_of LibraryItem, actual_book
+
+    # Add a second book for good practice
+    item2 = {
+      'isbn' => 123456789,
+      'title' => 'Another item'
+    }
+    # Create a new instance of the second item
+    library_item = LibraryItem.new(item2)
+    # Add it to DynamoDB
+    library_item.add_media
+
+    # Check that the method works for datetime_created
+    # Set up info parameters
+    info = {
+      'isbn' => actual_book.isbn,
+      'datetime_created' => actual_book.datetime_created
+    }
+    # Run the query method for the first item
+    book_result = LibraryItem.get_media(info)
+
+    assert_equal 1, book_result.length
+    assert_equal(123456789, book_result[0]['isbn'])
+    assert_equal(actual_book['datetime_created'], book_result[0]['datetime_created'])
+
   end
 
   test "#add_media should add item to DynamoDB" do

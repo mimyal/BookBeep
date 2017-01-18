@@ -8,10 +8,7 @@ Rails.application.routes.draw do
 
   post '/library_items', controller: 'library_items', action: 'create', as: 'create_library_item'
 
-  #this is improvised
-  delete '/library_items/:item', to: 'library_items#destroy', as: 'destroy_library_item'
-  #this is RESTful
-  # resources :library_item, only: [:destroy]
+  delete '/library_items/:datetime_created/:isbn', to: 'library_items#destroy', as: 'destroy_library_item'
 
   ## # From MEDIA RANKER
     # root 'main#index'

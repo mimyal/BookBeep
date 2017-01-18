@@ -26,6 +26,16 @@ class LibraryItem
     return @library_item
   end
 
+  def self.all
+    client = Aws::DynamoDB::Client.new
+    table_name = "LibraryItems"
+
+    results = client.scan({table_name: table_name})
+
+    return results.items
+  end
+
+
   # Method that will return a collection of library items depending on isbn, title or last name (partition key, GSIs)
   def self.get_media(info)
     client = Aws::DynamoDB::Client.new
@@ -38,6 +48,7 @@ class LibraryItem
     # if we know what item we want (we know the primary key)
     if info['isbn'] != nil && info['datetime_created'] != nil
       # NOT YET IN TESTS
+      raise # @todo IT REACHED THIS POINT!!
       # params = {
       #   table_name: table_name,
       #   key: {

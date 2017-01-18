@@ -2,7 +2,7 @@ class LibraryItemsController < ApplicationController
   before_action :dynamodb_setup #, :require_login
 
   def index
-    @item = {}
+    @item = {} # for destroy path experiments
 
     # Build query params from search
     if params[:search_key] == 'isbn'
@@ -10,8 +10,16 @@ class LibraryItemsController < ApplicationController
     else
       @info[params[:search_key]] = params[:search_value]
     end
+    binding
 
-    @library_items = LibraryItem.get_media(@info) #WEAK PARAMS
+    # For when the List all button is pressed
+    unless params[:search_key] == 'isbn' || params[:search_key] == 'title' || params[:search_key] == 'creator_surname'
+      # raise
+      @library_items = LibraryItem.all
+    else
+      @library_items = LibraryItem.get_media(@info) #WEAK PARAMS
+    end
+
     # raise
     if @library_items.empty?
       flash[:notice] = 'Book Beep returned no items for this search'
@@ -52,11 +60,12 @@ class LibraryItemsController < ApplicationController
   end
 
   def destroy
-    raise
+    # YAY SUCCESS
     #PARAMS FOR ONE ITEM SEARCH - COMPLETE PRIMARY KEY NEEDED
-    # @info['isbn']
-    # @info['datetime_created']
-    @library_item = @library_item.get_media(@info)[0]
+    @info['isbn'] = params['isbn'].to_i
+    @info['datetime_created'] = params['datetime_created'].to_i
+    @library_item = LibraryItem.get_media(@info)[0]
+    raise
     redirect_to library_items_path(params) #WEAK PARAMS
   end
 
