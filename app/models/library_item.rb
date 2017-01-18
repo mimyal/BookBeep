@@ -47,22 +47,24 @@ class LibraryItem
     # First search for a specific item using the isbn AND datetime_created
     # if we know what item we want (we know the primary key)
     if info['isbn'] != nil && info['datetime_created'] != nil
-      # NOT YET IN TESTS
-      raise # @todo IT REACHED THIS POINT!!
-      # params = {
-      #   table_name: table_name,
-      #   key: {
-      #   'isbn' => info['isbn'],
-      #   'datetime_created' => info['datetime_created']
-      # }}
-      # response = client.get_item(params)
-      # puts 'Ensure this is the item wanted:' + response.item
+      # raise # @todo IT REACHED THIS POINT!!
+      params = {
+        table_name: table_name,
+        key: {
+        'isbn' => info['isbn'],
+        'datetime_created' => info['datetime_created']
+      }}
+      response = client.get_item(params)
+      # puts "'Ensure this is the item wanted:' + #{response.item}"
       # puts 'What to do with response.item? Build a new instance of LibraryItem'
-      # if response.item != nil
-      #   @library << response.item
-      # else
-      #   return nil
-      # end
+      if response.item != nil
+        library_item = LibraryItem.new(response.item)
+        @library << library_item
+        # return @library # this is always of length one at this point
+      else
+        # return []
+      end
+      @library # Which is at length 1 or at [] at this point
     else # If we're looking for items
       # Second search for isbn only
       if info['isbn'] != nil # Partition key query
@@ -138,6 +140,7 @@ class LibraryItem
     return @library
   end
 
+  # Returns nil for unsuccessful adding, and self for a successfully added object to DynamoDB
   def add_media
     #Create a new client to access DynamoDB
     client = Aws::DynamoDB::Client.new
@@ -176,6 +179,10 @@ class LibraryItem
         puts "#{error.message}"
         return nil
       end
+  end
+
+  def destroy_media
+    raise
   end
 
 # @todo test test

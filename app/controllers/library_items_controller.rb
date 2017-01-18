@@ -64,8 +64,11 @@ class LibraryItemsController < ApplicationController
     #PARAMS FOR ONE ITEM SEARCH - COMPLETE PRIMARY KEY NEEDED
     @info['isbn'] = params['isbn'].to_i
     @info['datetime_created'] = params['datetime_created'].to_i
+    # Get the item to be destroyed
     @library_item = LibraryItem.get_media(@info)[0]
-    raise
+    @library_item.destroy_media # do I need to do a if save! kindofthing here?
+
+    # Does this list the whole database because of params @todo
     redirect_to library_items_path(params) #WEAK PARAMS
   end
 

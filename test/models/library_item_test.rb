@@ -391,12 +391,15 @@ class LibraryItemTest < ActiveSupport::TestCase
     # Add it to DynamoDB
     library_item.add_media
 
+    # Do it again
+    library_item.add_media
+
     # Get the item to set up the testing query at the end
-    # It is the only item in the db at this time so pick [0]
+    # The db at this time has two items, with the same isbn, so pick [0]
     actual_book = LibraryItem.get_media({'isbn' => 9119275714})[0]
     # assert_instance_of LibraryItem, actual_book
 
-    # Add a second book for good practice
+    # Add another book for good practice
     item2 = {
       'isbn' => 123456789,
       'title' => 'Another item'
@@ -412,13 +415,66 @@ class LibraryItemTest < ActiveSupport::TestCase
       'isbn' => actual_book.isbn,
       'datetime_created' => actual_book.datetime_created
     }
-    # Run the query method for the first item
+    # Run the query method for the first item, this is the method to be tested
+    # This returns an array of LibraryItem objects
     book_result = LibraryItem.get_media(info)
 
     assert_equal 1, book_result.length
-    assert_equal(123456789, book_result[0]['isbn'])
-    assert_equal(actual_book['datetime_created'], book_result[0]['datetime_created'])
+    assert_equal(9119275714, book_result[0].isbn)
+    assert_equal(actual_book.datetime_created, book_result[0].datetime_created)
+  end
 
+  test "#get_media should return an empty array if the tested isbn/datetime_created combination was not found" do
+    # First the new item info
+    item = {
+      'isbn' => 9119275714,
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_surname' => 'Jansson'
+    }
+    # Create a new instance of the item
+    library_item = LibraryItem.new(item)
+    # Add it to DynamoDB
+    library_item.add_media
+
+    actual_book = LibraryItem.get_media({'isbn' => 9119275714})[0]
+    # assert_instance_of LibraryItem, actual_book
+    actual_creation_time = actual_book.datetime_created
+
+    # Add another copy of the book
+    library_item.add_media
+
+    # Get the specific (first) book from the database
+    info = {
+      'isbn' => actual_book.isbn,
+      'datetime_created' => actual_book.datetime_created
+    }
+    # There is only one book in here
+    book_result = LibraryItem.get_media(info)
+
+    # Assert this is the book
+    assert_equal(9119275714, book_result[0].isbn)
+    assert_equal(actual_book.datetime_created, book_result[0].datetime_created)
+
+    # Now the info params are going to change
+    # ISBN
+    info_bad_isbn = {
+      'isbn' => 1119275714,
+      'datetime_created' => actual_book.datetime_created
+    }
+    # Try get this book
+    book1_result = LibraryItem.get_media(info_bad_isbn)
+    # Assert not found
+    assert_equal [], book1_result
+    # datetime_created
+    info_bad_datetime = {
+      'isbn' => actual_book.isbn,
+      'datetime_created' => 200
+    }
+    # Try get this book
+    book2_result = LibraryItem.get_media(info_bad_datetime)
+    # Assert not found
+    assert_equal [], book2_result
   end
 
   test "#add_media should add item to DynamoDB" do
@@ -632,6 +688,14 @@ class LibraryItemTest < ActiveSupport::TestCase
     end
 
   end #test
+
+  test "#destroy_media should remomve items from database" do
+    skip
+    assert false
+  end
+  test "#destroy_media should return the current isbn for items that does not exist" do
+    skip
+  end
 
 
 
