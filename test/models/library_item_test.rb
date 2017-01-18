@@ -690,8 +690,34 @@ class LibraryItemTest < ActiveSupport::TestCase
   end #test
 
   test "#destroy_media should remomve items from database" do
-    skip
-    assert false
+    #First add the new item info and create new instances of LibraryItem
+    info1 = {
+      'isbn' => 9119275714,
+      'title' => 'Sent i november',
+      'creator_first_name' => 'Tove',
+      'creator_surname' => 'Jansson'
+    }
+    info2 = {
+      'isbn' => 123456789,
+      'title' => 'Another item'
+    }
+    # Create a new instance of the item
+    library_item1 = LibraryItem.new(info1)
+    library_item2 = LibraryItem.new(info2)
+    # Second run the method to add the instance to DDB
+    library_item1.add_media
+    library_item2.add_media
+    # Then call the method to be tested
+
+    # First find the item in the database
+    # The return is an array of one
+    book_to_be_destroyed = LibraryItem.get_media({'isbn' => 9119275714})[0]
+    #Destroy!
+    book_to_be_destroyed.destroy_media
+
+    #Try to get the book again
+    results = LibraryItem.get_media({'isbn' => 9119275714})
+    assert_equal [], results
   end
   test "#destroy_media should return the current isbn for items that does not exist" do
     skip

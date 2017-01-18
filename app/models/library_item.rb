@@ -182,7 +182,15 @@ class LibraryItem
   end
 
   def destroy_media
-    raise
+    client = Aws::DynamoDB::Client.new
+    params = {
+      table_name: "LibraryItems",
+      key: {
+        'isbn' => self.isbn,
+        'datetime_created' => self.datetime_created
+      }
+    }
+    client.delete_item(params)
   end
 
 # @todo test test
