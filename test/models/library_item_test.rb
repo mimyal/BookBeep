@@ -169,6 +169,9 @@ class LibraryItemTest < ActiveSupport::TestCase
     library = LibraryItem.all
     assert_equal 3, library.length
 
+    # Should return a collection of Library Items
+    assert false
+
   end
 
   test "#get_media Getting a non-existing item from the database should return nil" do
@@ -722,7 +725,9 @@ class LibraryItemTest < ActiveSupport::TestCase
   test "#destroy_media should return the current isbn for items that does not exist" do
     skip
   end
-
+  test "#libris_search should not add media for an empty search" do
+    skip # this is on Trello as a bug
+  end
 
 
 end
