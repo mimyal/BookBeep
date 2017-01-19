@@ -32,9 +32,12 @@ class LibraryItem
 
     results = client.scan({table_name: table_name})
 
-    return results.items
+    results.items.each do |listing|
+      item = LibraryItem.new(listing)
+      @library << item
+    end
+    return @library
   end
-
 
   # Method that will return a collection of library items depending on isbn, title or last name (partition key, GSIs)
   def self.get_media(info)

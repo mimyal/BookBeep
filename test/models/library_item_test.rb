@@ -169,6 +169,9 @@ class LibraryItemTest < ActiveSupport::TestCase
     library = LibraryItem.all
     assert_equal 3, library.length
 
+    # Should return a collection of Library Items
+    assert false
+
   end
 
   test "#get_media Getting a non-existing item from the database should return nil" do
