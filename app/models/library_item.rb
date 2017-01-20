@@ -27,6 +27,7 @@ class LibraryItem
   end
 
   def self.all
+    @library = []
     client = Aws::DynamoDB::Client.new
     table_name = "LibraryItems"
 

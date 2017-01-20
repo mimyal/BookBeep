@@ -158,7 +158,7 @@ class LibraryItemTest < ActiveSupport::TestCase
     # should return a collection of one
     library = LibraryItem.all
     assert_equal 1, library.length
-    assert_equal 'Sent i november', library[0]['title']
+    assert_equal 'Sent i november', library[0].title
 
     library_item2.add_media
     library = LibraryItem.all
@@ -170,8 +170,9 @@ class LibraryItemTest < ActiveSupport::TestCase
     assert_equal 3, library.length
 
     # Should return a collection of Library Items
-    assert false
-
+    library.each do |book|
+      assert_instance_of LibraryItem, book
+    end
   end
 
   test "#get_media Getting a non-existing item from the database should return nil" do
@@ -721,9 +722,6 @@ class LibraryItemTest < ActiveSupport::TestCase
     #Try to get the book again
     results = LibraryItem.get_media({'isbn' => 9119275714})
     assert_equal [], results
-  end
-  test "#destroy_media should return the current isbn for items that does not exist" do
-    skip
   end
   test "#libris_search should not add media for an empty search" do
     skip # this is on Trello as a bug
