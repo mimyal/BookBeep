@@ -725,7 +725,4 @@ class LibraryItemTest < ActiveSupport::TestCase
   test "#destroy_media should return the current isbn for items that does not exist" do
     skip
   end
-
-
-
 end
