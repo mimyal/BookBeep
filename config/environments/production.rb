@@ -73,4 +73,8 @@ Rails.application.configure do
 
   # Use default logging formatter so that PID and timestamp are not suppressed.
   config.log_formatter = ::Logger::Formatter.new
+
+  #To force my miniicons to load in the background hopefully
+  config.serve_static_assets = true
+  config.assets.compile = true
 end

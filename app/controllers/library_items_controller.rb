@@ -24,7 +24,13 @@ class LibraryItemsController < ApplicationController
 
   # Redirect to here from main#index if the add new item form is filled in
   def create
-    isbn = params['isbn'].to_i
+    isbn = params['isbn'].gsub(/[^0-9,.]/, "").to_i
+    # Check for no/invalid entry
+    if isbn%100000000 < 1
+      flash[:notice] = "This is not a valid ISBN"
+      redirect_to main_path
+      return
+    end
     @library_item = LibraryItem.libris_search(isbn) #WEAK PARAMS
 
     if @library_item.nil?
