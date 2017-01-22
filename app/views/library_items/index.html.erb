@@ -2,7 +2,7 @@
 
 <!-- ERROR HANDLING HERE? -->
 <%if flash[:notice]%>
-<div class="flasher">
+<div class="flasher row">
   <h3 id="notice"><%= flash[:notice] %></h3>
 </div>
 <!-- Currently the only flash notice here is for adding data to DynamoDB -->
@@ -10,7 +10,7 @@
 <%end%>
 
 
-<section class="small-12 medium-10 large-10 column">
+<section class="small-12 medium-10 large-10 column end">
   <h2>Search results for <%= "#{params[:search_key]}: #{params[:search_value]}" %></h2>
   <table class="item-list">
     <thead>
@@ -49,11 +49,7 @@
           <%= "#{convert_ms_to_time(listing.datetime_created)}" %>
         </td>
         <td>
-        </td>
-        <td>
           <%= button_to "Delete", destroy_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>
-        </td>
-        <td>
         </td>
       </tr>
       <% end %>

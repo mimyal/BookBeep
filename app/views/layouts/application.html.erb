@@ -1,18 +1,24 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>BookBeep</title>
-  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
-  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
-  <%= csrf_meta_tags %>
-  <%= audio_tag 'beep.mp3', id: 'beep-sound' %>
-</head>
-<body>
-<header>
-  <%= image_tag 'bookeep-icon.jpg' %>
-</header>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<%= yield %>
-<!-- CONTENT FOR JS -->
-</body>
+    <title>BookBeep<%= content_for?(:title) ? yield(:title) : "Untitled" %></title>
+
+    <%= stylesheet_link_tag    "application" %>
+    <%= javascript_include_tag "application", 'data-turbolinks-track' => true %>
+    <%= csrf_meta_tags %>
+    <%= audio_tag 'beep.mp3', id: 'beep-sound' %>
+
+  </head>
+
+  <body class="small-12 medium-10 large-10 column end">
+    <header>
+      <%= image_tag 'bookeep-icon.jpg' %>
+    </header>
+
+    <%= yield %>
+    <!-- CONTENT FOR JS HERE -->
+  </body>
 </html>

@@ -5,37 +5,44 @@
   <title>BookBeep</title>
 </head>
 <body>
-    <h1>Book Beep</h1>
+  <h1>Book Beep</h1>
+  <main class="row">
 
-    <main>
-      <!-- ERROR HANDLING HERE? -->
-      <%if flash[:notice]%>
-      <div class="flasher">
-        <h3 id="notice"><%= flash[:notice] %></h3>
+    <!-- ERROR HANDLING HERE? -->
+    <%if flash[:notice]%>
+    <div class="flasher">
+      <h3 id="notice"><%= flash[:notice] %></h3>
+    </div>
+    <%end%>
+
+    <script type="text/javascript">littleBeep();</script>
+
+    <div class="small-12 medium-6 large-4 column end">
+      <div class="row">
+        <!-- PATH TO NEW ITEMS -->
+        <h2 class="">Add new items through Libris</h2>
+        <section class="", id="libris-search-form">
+          <%= form_tag(create_library_item_path, :method => "post", type: "number") do %>
+          <%= text_field_tag :isbn, params[:isbn], placeholder: "Libris ISBN #{params[:isbn]}" %>
+          <%= submit_tag "Add New Item", :name => nil  %>
+          <% end %>
+        </section>
       </div>
-      <%end%>
 
-      <script type="text/javascript">littleBeep();</script>
-
-      <!-- PATH TO NEW ITEMS -->
-      <section class="", id="libris-search-form">
-        <h2>Add new items through Libris</h2>
-        <%= form_tag(create_library_item_path, :method => "post", type: "number") do %>
-        <%= text_field_tag :isbn, params[:isbn], placeholder: "Search for #{params[:isbn]}" %>
-        <%= submit_tag "Add New Item", :name => nil  %>
-        <% end %>
-      </section>
       <!-- PATH TO VIEW ITEMS -->
-      <section class="", id="db-search-form">
-        <h2>Search for items in the Book Beep database</h2>
-        <%if flash[:notice]%>
-        <%end%>
-        <%= form_tag(library_items_path, :method => "get") do %>
-        <%= select_tag(:search_key, options_for_select([['ISBN', :isbn], ['Title', :title], ['Last Name', :creator_surname]], :isbn))%>
-        <%= text_field_tag :search_value, params[:search_value], placeholder: "Search for #{params[:search_value]}" %>
-        <%= submit_tag "Search", :name => nil  %>
-        <% end %>
-      </section>
+      <div class="row">
+        <section class="", id="db-search-form">
+          <h2>Search for items in the Book Beep database</h2>
+          <%if flash[:notice]%>
+          <%end%>
+          <%= form_tag(library_items_path, :method => "get") do %>
+          <%= select_tag(:search_key, options_for_select([['ISBN', :isbn], ['Title', :title], ['Last Name', :creator_surname]], :isbn))%>
+          <%= text_field_tag :search_value, params[:search_value], placeholder: "Search for #{params[:search_value]}" %>
+          <%= submit_tag "Search", :name => nil  %>
+          <% end %>
+        </section>
+      </div>
+    </div>
 
 
   </main>
