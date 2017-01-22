@@ -2,15 +2,17 @@
 
 <!-- ERROR HANDLING HERE? -->
 <%if flash[:notice]%>
-<h3 id="notice"><%= flash[:notice] %></h3>
+<div class="flasher">
+  <h3 id="notice"><%= flash[:notice] %></h3>
+</div>
 <!-- Currently the only flash notice here is for adding data to DynamoDB -->
 <script type="text/javascript">bigBeep();</script>
 <%end%>
 
 
-<section class="medium-10 large-10 column">
+<section class="small-12 medium-10 large-10 column">
   <h2>Search results for <%= "#{params[:search_key]}: #{params[:search_value]}" %></h2>
-  <table>
+  <table class="item-list">
     <thead>
       <tr>
         <th scope="col">ISBN</th>

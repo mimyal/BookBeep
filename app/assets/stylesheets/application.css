@@ -14,6 +14,33 @@
  *= require_self
  */
 
+
+ body {
+   background-image: url('bookeep-icon.jpg');
+   background-size: 10px;
+   /*background-repeat: no-repeat;*/
+ }
+
+ body h1 {
+   background-image: none;
+   background-color: #07AAD5;
+ }
+
+ .item-list {
+   background-image: none;
+   /*background-color: #07AAD5;*/
+   background-color: #07C1E8;
+ }
+
+main {
+  background-image: none;
+  background-color: #07AAD5;
+}
+.flasher {
+  background-image: none;
+  background-color: #07AAD5;
+}
+
  header img {
    width:200px;
  }
