@@ -8,7 +8,7 @@ class LibraryItem
   # validates :datetime_created, presence: true # Primary Sort Key
   validates :title, presence: true # Global Secondary Index
 
-  attr_accessor :isbn, :datetime_created, :title, :creator_surname, :creator_first_name
+  attr_accessor :isbn, :datetime_created, :title, :creator_surname, :creator_first_name, :uri_id
 
   def initialize(info)
     @isbn = info['isbn']

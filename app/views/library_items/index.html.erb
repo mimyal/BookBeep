@@ -17,7 +17,7 @@
         <th scope="col">Title</th>
         <th scope="col">Creator</th>
         <th scope="col">Date Added</th>
-        <th scope="col">Delete</th>
+        <th scope="col"></th>
       </tr>
     </thead>
     <tbody>
@@ -27,25 +27,29 @@
           <%= "#{listing.isbn.to_i}" %>
         </td>
         <td>
-          <%= link_to "#{listing.title}", root_path %>
+          <% if listing.uri_id !=nil %>
+          <%= link_to "#{listing.title}", listing.uri_id %>
+          <% else %>
+          <%= "#{listing.title}" %>
+          <% end %>
         </td>
         <% if listing.creator_surname || listing.creator_first_name %>
-          <td>
-            <% if listing.creator_first_name %>
-            <%= "#{listing.creator_first_name}" %>
-            <% end %>
-            <% if listing.creator_surname %>
-              <%= "#{listing.creator_surname}" %>
-            <% end %>
-          </td>
+        <td>
+          <% if listing.creator_first_name %>
+          <%= "#{listing.creator_first_name}" %>
+          <% end %>
+          <% if listing.creator_surname %>
+          <%= "#{listing.creator_surname}" %>
+          <% end %>
+        </td>
         <% end %>
         <td>
-          <%= link_to "#{convert_ms_to_time(listing.datetime_created)}", root_path %>
+          <%= "#{convert_ms_to_time(listing.datetime_created)}" %>
         </td>
         <td>
         </td>
         <td>
-          <%= link_to "Delete", destroy_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>
+          <%= button_to "Delete", destroy_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>
         </td>
         <td>
         </td>
