@@ -18,7 +18,7 @@
     <!-- PATH TO NEW ITEMS -->
     <section class="", id="libris-search-form">
       <h2>Add new items through Libris</h2>
-      <%= form_tag(create_library_item_path, :method => "post") do %>
+      <%= form_tag(create_library_item_path, :method => "post", type: "number") do %>
       <%= text_field_tag :isbn, params[:isbn], placeholder: "Search for #{params[:isbn]}" %>
       <%= submit_tag "Add New Item", :name => nil  %>
       <% end %>
