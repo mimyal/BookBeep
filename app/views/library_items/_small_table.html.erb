@@ -1,0 +1,27 @@
+
+
+  <h3>SMALL</h3>
+  <table class="show-for-small-only item-list">
+    <thead>
+      <tr>
+        <th scope="col">ISBN</th>
+        <th scope="col">Title</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @library_items.each do |listing| %>
+      <tr>
+        <td scope="row">
+          <%= "#{listing.isbn.to_i}" %>
+        </td>
+        <td>
+          <%= "#{listing.title}" %>
+        </td>
+        <td>
+          <%= button_to "Delete", destroy_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>
+        </td>
+      </tr>
+      <% end %>
+    </tbody>
+  </table>
