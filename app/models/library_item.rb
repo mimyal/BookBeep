@@ -19,8 +19,8 @@ class LibraryItem
     @uri_id = info['uri_id']
   end
 
-# Method returns an instance of LibraryItem, if successful
-# Method returns NIL if the search is unsuccessful/ISBN not found
+  # Method returns an instance of LibraryItem, if successful
+  # Method returns NIL if the search is unsuccessful/ISBN not found
   def self.libris_search(isbn)
     @library_item = LibrisWrapper.get_book(isbn)
     return @library_item
@@ -51,16 +51,14 @@ class LibraryItem
     # First search for a specific item using the isbn AND datetime_created
     # if we know what item we want (we know the primary key)
     if info['isbn'] != nil && info['datetime_created'] != nil
-      # raise # @todo IT REACHED THIS POINT!!
       params = {
         table_name: table_name,
         key: {
-        'isbn' => info['isbn'],
-        'datetime_created' => info['datetime_created']
-      }}
+          'isbn' => info['isbn'],
+          'datetime_created' => info['datetime_created']
+        }
+      }
       response = client.get_item(params)
-      # puts "'Ensure this is the item wanted:' + #{response.item}"
-      # puts 'What to do with response.item? Build a new instance of LibraryItem'
       if response.item != nil
         library_item = LibraryItem.new(response.item)
         @library << library_item
@@ -174,15 +172,15 @@ class LibraryItem
       item: item
     }
 
-      # Accessing DynamoDB to add the new item
-      begin
-        client.put_item(params) # add new item into DynamoDB
-        return self
-      rescue  Aws::DynamoDB::Errors::ServiceError => error
-        puts "Unable to add item:"
-        puts "#{error.message}"
-        return nil
-      end
+    # Accessing DynamoDB to add the new item
+    begin
+      client.put_item(params) # add new item into DynamoDB
+      return self
+    rescue  Aws::DynamoDB::Errors::ServiceError => error
+      puts "Unable to add item:"
+      puts "#{error.message}"
+      return nil
+    end
   end
 
   def destroy_media
@@ -195,29 +193,6 @@ class LibraryItem
       }
     }
     client.delete_item(params)
-  end
-
-# @todo test test
-  # QUERY IF ISBN ALREADY EXISTS IN DATABASE
-  # return list of objects, if any, or []
-  def check_copies
-  #   # Set up query
-  #   query = {
-  #     table_name: "LibraryItems",
-  #     key_condition_expression: "isbn = :isbn",
-  #     expression_attribute_values: {
-  #       ":isbn" => item['isbn']
-  #     }
-  #   }
-  #   # Run query
-  #   begin
-  #     results = dynamodb.query(query)
-  #   rescue  Aws::DynamoDB::Errors::ServiceError => error
-  #     puts "#add_media test: Unable to query table:"
-  #     puts "#{error.message}"
-  #   end
-  #
-  #
-  end
+  end #destroy_media
 
 end

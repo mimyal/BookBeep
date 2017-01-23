@@ -14,6 +14,10 @@
 //= require jquery_ujs
 //= require foundation
 //= require turbolinks
+
+//= require beep-test
+//= require serratus-quaggaJS-b88a7b7/dist/quagga
+
 //= require_tree .
 
 $(function(){ $(document).foundation(); });

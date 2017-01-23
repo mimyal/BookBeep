@@ -9,7 +9,7 @@
 <script type="text/javascript">bigBeep();</script>
 <%end%>
 <article class="row">
-  <section class="show-for-small-only small-12 column", id="libris-search-form">
+  <section class="hide-for-small-only medium-10 column", id="libris-search-form">
     <%= form_tag(create_library_item_path, :method => "post") do %>
     <%= text_field_tag :isbn, params[:isbn], placeholder: "Libris ISBN! #{params[:isbn]}" %>
     <%= submit_tag "Add New", :name => nil, class: "row"  %>

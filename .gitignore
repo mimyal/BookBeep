@@ -27,3 +27,6 @@ test/cassettes/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# IntelliJ used to look at the long quagga.js file
+.idea
