@@ -11,15 +11,22 @@ class LibraryItemsController < ApplicationController
 
     # For when the List all button is pressed
     unless params[:search_key] == 'isbn' || params[:search_key] == 'title' || params[:search_key] == 'creator_surname'
-      @library_items = LibraryItem.all
+      items = LibraryItem.all
     else
-      @library_items = LibraryItem.get_media(@info) #WEAK PARAMS
+      items = LibraryItem.get_media(@info) #WEAK PARAMS
     end
 
-    if @library_items.empty?
+    if items.empty?
       flash[:notice] = 'Book Beep returned no items for this search'
       redirect_to main_path
     end
+
+    #Sort the media (not tested)
+    sorted_items = items.sort_by { |item|
+      item.datetime_created
+    }
+    @library_items = sorted_items.reverse
+
   end
 
   # Redirect to here from main#index if the add new item form is filled in

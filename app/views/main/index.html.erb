@@ -17,19 +17,13 @@
 
     <script type="text/javascript">littleBeep();</script>
 
-    <div class="medium-12 large-12 column end">
+    <div class="small-12 medium-12 large-12 column end">
       <div class="row main-form">
         <!-- PATH TO NEW ITEMS -->
-        <h2>Add new items through Libris</h2>
-        <section class="show-for-small-only small-12 column", id="libris-search-form">
+        <h2>Add new items through Libris:</h2>
+        <section class="small-12 medium-8 column end", id="libris-search-form">
           <%= form_tag(create_library_item_path, :method => "post") do %>
-          <%= text_field_tag :isbn, params[:isbn], placeholder: "Libris ISBN! #{params[:isbn]}" %>
-          <%= submit_tag "Add New", :name => nil, class: "row"  %>
-          <% end %>
-        </section>
-        <section class="hide-for-small-only medium-12 column", id="libris-search-form">
-          <%= form_tag(create_library_item_path, :method => "post") do %>
-          <%= text_field_tag :isbn, params[:isbn], placeholder: "Libris ISBN #{params[:isbn]}" %>
+          <%= text_field_tag :isbn, params[:isbn], placeholder: "Enter ISBN to search/add from Libris #{params[:isbn]}" %>
           <%= submit_tag "Add New", :name => nil, class: "row"  %>
           <% end %>
         </section>
@@ -37,8 +31,8 @@
 
       <!-- PATH TO VIEW ITEMS -->
       <div class="row main-form">
-        <section class="small-12 column", id="db-search-form">
-          <h2>Search for items in the Book Beep database</h2>
+        <section class="small-12 medium-8 column", id="db-search-form">
+          <h2>Search for items in the Book Beep database:</h2>
           <%if flash[:notice]%>
           <%end%>
           <%= form_tag(library_items_path, :method => "get") do %>
@@ -52,7 +46,7 @@
   </main>
 
   <p>
-    <%= link_to "List catalogue", library_items_path, :method => 'get' %>
+    <%= button_to "List catalogue", library_items_path, method: :get, class: "solid button" %>
   </p>
 
   <!-- List ten most popular media items -->

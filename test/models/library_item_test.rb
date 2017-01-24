@@ -170,14 +170,9 @@ class LibraryItemTest < ActiveSupport::TestCase
     assert_equal 3, library.length
 
     # Should return a collection of Library Items
-<<<<<<< HEAD
-    assert false
-
-=======
     library.each do |book|
       assert_instance_of LibraryItem, book
     end
->>>>>>> master
   end
 
   test "#get_media Getting a non-existing item from the database should return nil" do
@@ -727,9 +722,6 @@ class LibraryItemTest < ActiveSupport::TestCase
     #Try to get the book again
     results = LibraryItem.get_media({'isbn' => 9119275714})
     assert_equal [], results
-  end
-  test "#libris_search should not add media for an empty search" do
-    skip # this is on Trello as a bug
   end
 
 end

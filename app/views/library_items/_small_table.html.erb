@@ -3,8 +3,8 @@
   <table class="show-for-small-only small-item-list">
     <thead>
       <tr>
-        <th scope="col">ISBN</th>
-        <th scope="col">Title</th>
+        <th scope="col">Date Added</th>
+        <th scope="col">Title / Creator</th>
         <th scope="col"></th>
       </tr>
     </thead>
@@ -12,10 +12,10 @@
       <% @library_items.each do |listing| %>
       <tr>
         <td scope="row">
-          <%= "#{listing.isbn.to_i}" %>
+          <%= "#{convert_ms_to_short_time(listing.datetime_created)}" %>
         </td>
         <td>
-          <%= "#{listing.title}" %>
+          <%= "#{listing.title} / #{listing.creator_surname}" %>
         </td>
         <td>
           <%= button_to "Delete", destroy_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>

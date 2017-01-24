@@ -29,11 +29,10 @@
 .small-item-list {
   width: 100%;
 }
- // .item-list {
- //   background-image: none;
- //   /*background-color: #07AAD5;*/
- //   background-color: #07C1E8;
- // }
+
+.date-column {
+  width: 20%;
+}
 
 .flasher {
   background-image: none;
@@ -42,4 +41,5 @@
 
  header img {
    width:200px;
+   padding: 2%;
  }
