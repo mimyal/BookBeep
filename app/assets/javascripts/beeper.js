@@ -37,9 +37,24 @@ var quagga_isbn = function() {
       console.log("Initialization finished. Ready to start");
       Quagga.start();
   });
+    // @TODO LISTEN CALLBACK
+    Quagga.onProcessed(onDecoded);
+    // Quagga.onProcessed(onDecoded();); // Which one is it?
+};
+
+var quagga_stop = function() {
+  Quagga.stop();
+  console.log('Camera disengaged');
+};
+
+// This does not seem correct
+var onDecoded = function() {
+  console.log('Decoded!');
+  Quagga.stop();
 };
 
 
+// This one does not work
 $('#run-quagga-button').click(function() {
   // do stuff
   console.log('quagga quagga');

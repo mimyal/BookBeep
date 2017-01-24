@@ -4,6 +4,7 @@ class LibraryItemsController < ApplicationController
   def index
     # Build query params from search
     if params[:search_key] == 'isbn'
+      # Don't do to_i if first number is zero - hm real problem... (add another number at front??)
       @info[params[:search_key]] = params[:search_value].to_i
     else
       @info[params[:search_key]] = params[:search_value]
@@ -26,6 +27,7 @@ class LibraryItemsController < ApplicationController
   def create
     isbn = params['isbn'].gsub(/[^0-9,.]/, "").to_i
     # Check for no/invalid entry
+    # This need to be fixed/does not always work
     if isbn%100000000 < 1
       flash[:notice] = "This is not a valid ISBN"
       redirect_to main_path
