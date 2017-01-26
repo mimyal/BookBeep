@@ -13,12 +13,13 @@ class LibraryItemsController < ApplicationController
     unless params[:search_key] == 'isbn' || params[:search_key] == 'title' || params[:search_key] == 'creator_surname'
       items = LibraryItem.all
     else
-      items = LibraryItem.get_media(@info) #WEAK PARAMS
+      items = LibraryItem.get_media(@info)
     end
 
     if items.empty?
       flash[:notice] = 'Book Beep returned no items for this search'
       redirect_to main_path
+      return
     end
 
     #Sort the media (not tested)
@@ -38,10 +39,10 @@ class LibraryItemsController < ApplicationController
       redirect_to main_path
       return
     end
-    @library_item = LibraryItem.libris_search(isbn) #WEAK PARAMS
+    @library_item = LibraryItem.libris_search(isbn)
 
     if @library_item.nil?
-      flash[:notice] = "This ISBN was not found in Libris"
+      flash[:notice] = "This ISBN was not found in Libris: #{params['isbn']}"
       redirect_to main_path # what is the difference between render/redirect?
       return
     end
@@ -54,10 +55,10 @@ class LibraryItemsController < ApplicationController
         redirect_to main_path
         return
       end
-      flash[:notice] = "BEEP! The item was successfully added to Book Beep"
+      flash[:notice] = "BEEP! '#{@library_item.title }' was successfully added to Book Beep"
       params[:search_key] = 'isbn'
       params[:search_value] = @library_item.isbn.to_s
-      redirect_to library_items_path(params) # WEAK PARAMS
+      redirect_to library_items_path(params)
       return
     else
       #FAILURE
@@ -74,8 +75,10 @@ class LibraryItemsController < ApplicationController
     @info['datetime_created'] = params['datetime_created'].to_i
     # Get the item to be destroyed
     @library_item = LibraryItem.get_media(@info)[0]
+    @info['title'] = @library_item.title
     @library_item.destroy_media # do I need to do a if save! kindofthing here?
     # Does this list the whole database because of params @todo
+    flash[:notice] = "Deleted item from database: '#{@info['title']}'"
     redirect_to library_items_path(params) #WEAK PARAMS
   end
 
@@ -87,10 +90,11 @@ class LibraryItemsController < ApplicationController
 
   private
 
-  # def item_params
-  #   return params.permit(@info)
-  #   # return params.require(:library_item).permit(:isbn, :datetime_created, :creator_first_name, :creator_surname, :title)
-  # end
+  def index_params
+    # return params.permit(@info)
+    # return params.permit(:isbn, :datetime_created, :creator_first_name, :creator_surname, :title)
+    return params.permit(:search_key, :search_value, :isbn, :creator_surname, :title)
+  end
 
   def dynamodb_setup
     @client = Aws::DynamoDB::Client.new

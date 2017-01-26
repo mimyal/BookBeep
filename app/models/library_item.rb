@@ -51,7 +51,6 @@ class LibraryItem
     # First search for a specific item using the isbn AND datetime_created
     # if we know what item we want (we know the primary key)
     if info['isbn'] != nil && info['datetime_created'] != nil
-      # raise # @todo IT REACHED THIS POINT!!
       params = {
         table_name: table_name,
         key: {
@@ -59,8 +58,6 @@ class LibraryItem
         'datetime_created' => info['datetime_created']
       }}
       response = client.get_item(params)
-      # puts "'Ensure this is the item wanted:' + #{response.item}"
-      # puts 'What to do with response.item? Build a new instance of LibraryItem'
       if response.item != nil
         library_item = LibraryItem.new(response.item)
         @library << library_item
@@ -80,13 +77,13 @@ class LibraryItem
           }
         }
       end
-      # Third search for datetime_created only
-      if info[:datetime_created] != nil # Sort key query
-        # NOT IMPLEMENTED
-        # NO TESTS FOR THIS YET - should look the same as for info, but then we dont get a range
-        # This is only used in case we are looking for a range, might be a much easier way to do this querywise
-        # Return a collection within the date range
-      end
+      # # Third search for datetime_created only
+      # if info[:datetime_created] != nil # Sort key query
+      #   # NOT IMPLEMENTED
+      #   # NO TESTS FOR THIS YET - should look the same as for info, but then we dont get a range
+      #   # This is only used in case we are looking for a range, might be a much easier way to do this querywise
+      #   # Return a collection within the date range
+      # end
       # Forth search for GSI title
       if info['title'] != nil
         params = {
@@ -114,16 +111,12 @@ class LibraryItem
       end
       # Check that params is not empty
       if params.empty?
-        # puts "PARAMS EMPTY for #{info}"
         return @library # = [] # data.items = [] if nothing was found
       end
       # STEP 2: RUN QUERY
       begin
-        # raise
         data = client.query(params)
-        # puts "Method get_media query succeeded."
         if data.items.empty?
-          # puts "DATA>ITEMS EMPTY for #{info}"
           return @library # = [] # data.items = [] if nothing was found
         end
         data.items.each { |listing|
@@ -132,12 +125,12 @@ class LibraryItem
           info['title'] = listing['title']
           info['creator_first_name'] = listing['creator_first_name']
           info['creator_surname'] = listing['creator_surname']
+          info['uri_id'] = listing['uri_id']
           @library << LibraryItem.new(info)
         }
       rescue  Aws::DynamoDB::Errors::ServiceError => error
         puts "Unable to query table:"
         puts "#{error.message}"
-        # puts "The parameters were: #{params}"
         return @library
       end # query for collection/lists of items
     end #if
@@ -167,6 +160,9 @@ class LibraryItem
     if !@creator_surname.nil?
       item['creator_surname'] = @creator_surname
       item['creator_surname_upcase'] = @creator_surname.mb_chars.upcase.to_s
+    end
+    if !@uri_id.nil?
+      item['uri_id'] = @uri_id
     end
 
     params = {

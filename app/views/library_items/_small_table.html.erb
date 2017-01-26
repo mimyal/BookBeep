@@ -18,7 +18,7 @@
           <%= "#{listing.title} / #{listing.creator_surname}" %>
         </td>
         <td>
-          <%= button_to "Delete", destroy_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>
+          <%= button_to "Delete", destroy_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :delete, data: { confirm: "Are you sure that this item must be deleted? (#{listing.title})" }, class: "alert button" %>
         </td>
       </tr>
       <% end %>

@@ -19,7 +19,7 @@
 @import 'settings';
 
 body {
-  background-image: image-url('bookeep-icon.jpg');
+  background-image: image-url('bookbeep.png');
 
   // Only affects small screens
   @include breakpoint(small) {

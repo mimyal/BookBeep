@@ -18,7 +18,7 @@
         </td>
         <td>
           <% if listing.uri_id !=nil %>
-          <%= link_to "#{listing.title}", listing.uri_id %>
+          <%= link_to "#{listing.title}", listing.uri_id, target: "_blank" %>
           <% else %>
           <%= "#{listing.title}" %>
           <% end %>
@@ -37,7 +37,7 @@
           <%= "#{convert_ms_to_time(listing.datetime_created)}" %>
         </td>
         <td>
-          <%= button_to "Delete", destroy_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :delete, data: { confirm: "Are you sure that this item must be deleted?" }, class: "alert button" %>
+          <%= button_to "Delete", destroy_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :delete, data: { confirm: "Are you sure that this item must be deleted? (#{listing.title})" }, class: "alert button" %>
         </td>
       </tr>
       <% end %>

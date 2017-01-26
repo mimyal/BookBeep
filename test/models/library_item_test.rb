@@ -693,6 +693,11 @@ class LibraryItemTest < ActiveSupport::TestCase
 
   end #test
 
+  # Because I forgot to add uri_id - this is fixed but I never tested it
+  test "#add_media will collect all the information from the wrapper that is available and put it into the object" do
+    skip
+  end
+
   test "#destroy_media should remomve items from database" do
     #First add the new item info and create new instances of LibraryItem
     info1 = {
