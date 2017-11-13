@@ -8,4 +8,14 @@ module LibraryItemsHelper
     return sorted_items.reverse
   end
 
+  def params_to_text(search_param)
+    if params[:search_key] == 'creator_surname'
+      return 'Author'
+    elsif params[:search_key] == 'title'
+      return 'Title'
+    else
+      return 'ISBN'
+    end
+  end
+
 end

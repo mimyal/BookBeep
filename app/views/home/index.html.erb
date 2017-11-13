@@ -1,9 +1,18 @@
-    <h1>Book Beep</h1>
-    <p>This app is using ISBN from Swedish books and the database Libris to create a catalogue on DynamoDB.</p>
+    <h1>Book Beep </h1>
+    <div class="show-for-large-only">
+      <h2>- där ditt bibliotek sparas på molnet</h2>
+    </div>
+    <p>This Rails app is using the Swedish database Libris and books with their ISBN to create a catalogue on DynamoDB.</p>
 
-    <h3>Search the royal library database:</h3>
+    <div>
+      <p>Enter the portal to add items to the library catalogue using ISBN:
+      <%= link_to "Book Beep Portal", main_path, method: :get, class: "link-button" %>
+     </p>
+    </div>
+    <p></p>
+    <h7>Search the royal library database elsewhere:</h7>
     <!-- BEGIN LIBRIS search box -->
-      <div style="background: #191919 url(http://libris.kb.se/images/bg2_2.gif) bottom repeat-x; width: 80%;">
+    <div style="background: #191919 url(http://libris.kb.se/images/bg2_2.gif) bottom repeat-x; width: 80%;">
       <div style="background: url(http://libris.kb.se/images/main2_2.gif) no-repeat; width: 100%;">
         <form style="margin: 0; padding: 7px 0 11px 100px;" method="get" target="_blank" action="http://libris.kb.se/formatQuery.jsp?" accept-charset="UTF-8" onsubmit="window.open('http://libris.kb.se/formatQuery.jsp?SEARCH_ALL='+ encodeURIComponent(document.getElementById('LIBRIS_SEARCH2').value),'LIBRIS'); return false;">
           <fieldset style="margin: 0; padding: 0; border: none;">
@@ -14,9 +23,4 @@
       </div>
     </div>
     <!-- END LIBRIS search box -->
-    <p></p>
-    <div>
-      <h3>Enter here to add items to the library catalogue:</h3>
-      <%= button_to "Book Beep Portal", main_path, method: :get, class: "solid button" %>
-    </div>
-    <h4>- där ditt bibliotek sparas på molnet</h4>
+

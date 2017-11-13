@@ -30,3 +30,4 @@ test/cassettes/
 
 # IntelliJ
 .idea
+*.iml

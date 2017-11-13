@@ -32,6 +32,7 @@ class LibraryItemsController < ApplicationController
 
   # Redirect to here from main#index if the add new item form is filled in
   def create
+    # TODO: Add text ('one') to number ('1') conversion
     isbn = params['isbn'].gsub(/[^0-9,.]/, "").to_i
     # Check for no/invalid entry
     if isbn%100000000 < 1
@@ -69,7 +70,6 @@ class LibraryItemsController < ApplicationController
   end
 
   def destroy
-    # YAY SUCCESS
     #PARAMS FOR ONE ITEM SEARCH - COMPLETE PRIMARY KEY NEEDED
     @info['isbn'] = params['isbn'].to_i
     @info['datetime_created'] = params['datetime_created'].to_i
@@ -82,9 +82,18 @@ class LibraryItemsController < ApplicationController
     redirect_to library_items_path(params) #WEAK PARAMS
   end
 
+  def update
+    # @info['isbn'] = params['isbn'].to_i
+    # @info['datetime_created'] = params['datetime_created'].to_i
 
+    flash[:notice] = 'Update is not yet implemented'
+    redirect_to library_items_path
+  end
 
-
+  def edit
+    flash[:notice] = 'Edit is not yet implemented'
+    redirect_to library_items_path
+  end
 
 
 

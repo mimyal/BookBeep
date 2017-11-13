@@ -1,4 +1,4 @@
-<%= button_to "Library Main", main_path, method: :get  %>
+<%= link_to "Library Main", main_path, class: 'link-button'  %>
 
 <!-- ERROR HANDLING HERE? -->
 <%if flash[:notice]%>
@@ -8,19 +8,17 @@
 <!-- Currently the only flash notice here is for adding data to DynamoDB -->
 <script type="text/javascript">bigBeep();</script>
 <%end%>
+
 <article class="row">
+  <section class="small-12 medium-10 large-10 column end">
+    <h2>Search results for <%= "(#{params_to_text(params[:search_key])}): #{params[:search_value]}" %></h2>
 
-<section class="small-12 medium-10 large-10 column end">
-  <h2>Search results for <%= "#{params[:search_key]}: #{params[:search_value]}" %></h2>
+    <div class="hide-for-small-only">
+      <%= render partial: "big_table" %>
+    </div>
 
-<div class="hide-for-small-only">
-  <%= render partial: "big_table" %>
-</div>
-
-<div class="show-for-small-only">
-  <%= render partial: "small_table" %>
-</div>
-
-
-</section>
+    <div class="show-for-small-only">
+      <%= render partial: "small_table" %>
+    </div>
+  </section>
 </article>

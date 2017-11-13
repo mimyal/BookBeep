@@ -8,6 +8,7 @@
         <th scope="col">Creator</th>
         <th class="date-column", scope="col">Date Added</th>
         <th scope="col"></th>
+        <th scope="col"></th>
       </tr>
     </thead>
     <tbody>
@@ -17,7 +18,7 @@
           <%= "#{listing.isbn.to_i}" %>
         </td>
         <td>
-          <% if listing.uri_id !=nil %>
+          <% if !listing.uri_id.nil? %>
           <%= link_to "#{listing.title}", listing.uri_id, target: "_blank" %>
           <% else %>
           <%= "#{listing.title}" %>
@@ -38,6 +39,9 @@
         </td>
         <td>
           <%= button_to "Delete", destroy_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :delete, data: { confirm: "Are you sure that this item must be deleted? (#{listing.title})" }, class: "alert button" %>
+        </td>
+        <td>
+          <%= button_to "Edit", edit_library_item_path('isbn': listing.isbn.to_i, 'datetime_created': listing.datetime_created.to_i), method: :get, class: "solid_button" %>
         </td>
       </tr>
       <% end %>

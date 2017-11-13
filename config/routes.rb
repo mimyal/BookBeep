@@ -10,6 +10,13 @@ Rails.application.routes.draw do
 
   delete '/library_items/:datetime_created/:isbn', to: 'library_items#destroy', as: 'destroy_library_item'
 
+
+  # In SAIVO
+
+  get 'library_items/:datetime_created/:isbn/edit', to: 'library_items#edit', as: 'edit_library_item'
+  patch 'library_items/:datetime_created/:isbn' => 'library_items#update'
+
+
   ## # From MEDIA RANKER
     # root 'main#index'
     # resources :movies, controller: 'media_listings', type: "Movie", except:  [:create]

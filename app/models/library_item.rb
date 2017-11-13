@@ -3,8 +3,9 @@ require 'aws-sdk'
 class LibraryItem
   include ActiveModel::Validations
   # include Aws::Record
+  # before action :create_client # if before action works for self-methods?
 
-  validates :isbn, presence: true #, length: { is: (9 || 12) } # Primary Partition Key (Libris seem to have some unexpected length ISBNs)
+  validates :isbn, presence: true #, length: { is: (9 || 12) } # Primary Partition Key (Libris seems to have some unexpected length ISBNs)
   # validates :datetime_created, presence: true # Primary Sort Key
   validates :title, presence: true # Global Secondary Index
 
@@ -215,5 +216,11 @@ class LibraryItem
   #
   #
   end
+
+private
+
+  # def create_client
+  #   @client = Aws::DynamoDB::Client.new unless @client
+  # end
 
 end
