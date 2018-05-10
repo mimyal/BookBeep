@@ -29,7 +29,7 @@ class LibraryItem
 
   def self.all
     @library = []
-    client = Aws::DynamoDB::Client.new
+    client = Aws::DynamoDB::Client.new # Config in aws.rb 
     table_name = "LibraryItems"
 
     results = client.scan({table_name: table_name})

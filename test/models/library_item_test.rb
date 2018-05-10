@@ -5,7 +5,7 @@ require File.expand_path("../../test_helper", __FILE__)
 class LibraryItemTest < ActiveSupport::TestCase
 
   setup do
-    dynamodb = Aws::DynamoDB::Client.new( # ensure client is local and same as aws.rb
+    dynamodb = Aws::DynamoDB::Client.new( # ensure client is local and same as aws.rb before RAKE TEST
     region: "us-west-2",
     endpoint: "http://localhost:8000"
     )
@@ -85,21 +85,23 @@ class LibraryItemTest < ActiveSupport::TestCase
       begin
         result = dynamodb.create_table(params) # CREATE TABLE
         # puts "Created table. Status: " +
-        result.table_description.table_status;
+        # result.table_description.table_status;
 
       rescue  Aws::DynamoDB::Errors::ServiceError => error
         puts "Unable to create table:"
         puts "#{error.message}"
       end
     else
-      puts 'WHATS THE TABLE DOING UP?'
+      puts 'DynamoDB table already exists!'
     end
-    # puts dynamodb.list_tables
+    # puts 'TABLE INFO:', dynamodb.list_tables
   end
 
   teardown do
-    dynamodb = Aws::DynamoDB::Client.new
-
+    dynamodb = Aws::DynamoDB::Client.new( # ensure client is local and same as aws.rb
+    region: "us-west-2",
+    endpoint: "http://localhost:8000"
+    )
     table_name = "LibraryItems"
 
     begin

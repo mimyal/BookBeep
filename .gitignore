@@ -29,5 +29,5 @@ test/cassettes/
 !.elasticbeanstalk/*.global.yml
 
 # IntelliJ
-.idea
+.idea*
 *.iml
